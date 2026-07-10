@@ -168,13 +168,12 @@ window.addEventListener('keyup', (e) => {
   if (action) keys[action] = false;
 });
 
-// ---- Touch: floating virtual joystick (phones and tablets) ----
-// Touch the canvas anywhere and a joystick appears under your thumb; drag
-// up/down to walk, left/right to turn. Dialogue buttons still take taps.
+// ---- Touch: invisible virtual joystick (phones and tablets) ----
+// Touch the canvas anywhere and drag: up/down walks, left/right turns.
+// No visual widget -- your finger IS the joystick. Dialogue buttons still
+// take ordinary taps.
 const joystick = { active: false, x: 0, y: 0, touchId: null, baseX: 0, baseY: 0 };
-const JOYSTICK_RADIUS = 55; // px; the knob clamps to this
-const joystickBaseEl = document.getElementById('joystick-base');
-const joystickKnobEl = document.getElementById('joystick-knob');
+const JOYSTICK_RADIUS = 55; // px of drag for full speed
 
 canvas.addEventListener('touchstart', (e) => {
   if (joystick.active) return;
@@ -185,12 +184,8 @@ canvas.addEventListener('touchstart', (e) => {
   joystick.baseY = touch.clientY;
   joystick.x = 0;
   joystick.y = 0;
-  joystickBaseEl.style.display = 'block';
-  joystickBaseEl.style.left = `${touch.clientX}px`;
-  joystickBaseEl.style.top = `${touch.clientY}px`;
-  joystickKnobEl.style.transform = 'translate(0px, 0px)';
   // First touch: swap the keyboard hint for a touch hint
-  document.getElementById('hint-banner').textContent = 'Drag the joystick to walk around!';
+  document.getElementById('hint-banner').textContent = 'Drag your finger to walk around!';
   e.preventDefault();
 }, { passive: false });
 
@@ -205,7 +200,6 @@ canvas.addEventListener('touchmove', (e) => {
       dx = (dx / dist) * JOYSTICK_RADIUS;
       dy = (dy / dist) * JOYSTICK_RADIUS;
     }
-    joystickKnobEl.style.transform = `translate(${dx}px, ${dy}px)`;
     joystick.x = dx / JOYSTICK_RADIUS; // -1 .. 1, right is positive
     joystick.y = dy / JOYSTICK_RADIUS; // -1 .. 1, down is positive
   }
@@ -219,7 +213,6 @@ function endJoystickTouch(e) {
     joystick.touchId = null;
     joystick.x = 0;
     joystick.y = 0;
-    joystickBaseEl.style.display = 'none';
   }
 }
 canvas.addEventListener('touchend', endJoystickTouch);
@@ -267,6 +260,7 @@ world.setMeteorLandHandler((x, z) => {
 const statGoldEl = document.getElementById('stat-gold');
 const statTimeEl = document.getElementById('stat-time');
 const statDistanceEl = document.getElementById('stat-distance');
+let hintBannerEl = document.getElementById('hint-banner');
 
 // ---- Intro story box ----
 // Shown once at startup; the clock and the controls only start once it's
@@ -827,6 +821,13 @@ function animate() {
   // Tick the countdown (only once the intro is closed) and refresh the stats box
   if (!introOpen) {
     gameState.timeLeftSec = Math.max(0, gameState.timeLeftSec - delta);
+  }
+  // The how-to-move hint has served its purpose after the first minute.
+  // Removing (not just hiding) the element keeps the dialogue system's
+  // show/hide toggling from ever resurrecting it.
+  if (hintBannerEl && 15 * 60 - gameState.timeLeftSec >= 60) {
+    hintBannerEl.remove();
+    hintBannerEl = null;
   }
   updateHud();
 
