@@ -168,6 +168,63 @@ window.addEventListener('keyup', (e) => {
   if (action) keys[action] = false;
 });
 
+// ---- Touch: floating virtual joystick (phones and tablets) ----
+// Touch the canvas anywhere and a joystick appears under your thumb; drag
+// up/down to walk, left/right to turn. Dialogue buttons still take taps.
+const joystick = { active: false, x: 0, y: 0, touchId: null, baseX: 0, baseY: 0 };
+const JOYSTICK_RADIUS = 55; // px; the knob clamps to this
+const joystickBaseEl = document.getElementById('joystick-base');
+const joystickKnobEl = document.getElementById('joystick-knob');
+
+canvas.addEventListener('touchstart', (e) => {
+  if (joystick.active) return;
+  const touch = e.changedTouches[0];
+  joystick.active = true;
+  joystick.touchId = touch.identifier;
+  joystick.baseX = touch.clientX;
+  joystick.baseY = touch.clientY;
+  joystick.x = 0;
+  joystick.y = 0;
+  joystickBaseEl.style.display = 'block';
+  joystickBaseEl.style.left = `${touch.clientX}px`;
+  joystickBaseEl.style.top = `${touch.clientY}px`;
+  joystickKnobEl.style.transform = 'translate(0px, 0px)';
+  // First touch: swap the keyboard hint for a touch hint
+  document.getElementById('hint-banner').textContent = 'Drag the joystick to walk around!';
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+  if (!joystick.active) return;
+  for (const touch of e.changedTouches) {
+    if (touch.identifier !== joystick.touchId) continue;
+    let dx = touch.clientX - joystick.baseX;
+    let dy = touch.clientY - joystick.baseY;
+    const dist = Math.hypot(dx, dy);
+    if (dist > JOYSTICK_RADIUS) {
+      dx = (dx / dist) * JOYSTICK_RADIUS;
+      dy = (dy / dist) * JOYSTICK_RADIUS;
+    }
+    joystickKnobEl.style.transform = `translate(${dx}px, ${dy}px)`;
+    joystick.x = dx / JOYSTICK_RADIUS; // -1 .. 1, right is positive
+    joystick.y = dy / JOYSTICK_RADIUS; // -1 .. 1, down is positive
+  }
+  e.preventDefault();
+}, { passive: false });
+
+function endJoystickTouch(e) {
+  for (const touch of e.changedTouches) {
+    if (touch.identifier !== joystick.touchId) continue;
+    joystick.active = false;
+    joystick.touchId = null;
+    joystick.x = 0;
+    joystick.y = 0;
+    joystickBaseEl.style.display = 'none';
+  }
+}
+canvas.addEventListener('touchend', endJoystickTouch);
+canvas.addEventListener('touchcancel', endJoystickTouch);
+
 // ---- Movement tuning ----
 const WALK_SPEED = 7.2; // units per second (the zap doubles it again)
 const TURN_SPEED = 2.6; // radians per second
@@ -629,17 +686,25 @@ function animate() {
 
   // Turning (frozen while talking or seeing stars)
   const canAct = !inDialogue && !stunned;
-  if (canAct && keys.turnLeft) character.root.rotation.y += TURN_SPEED * delta;
-  if (canAct && keys.turnRight) character.root.rotation.y -= TURN_SPEED * delta;
+  // Merge keyboard and joystick into analog inputs (-1..1)
+  const DEADZONE = 0.18;
+  let turnInput = (keys.turnRight ? 1 : 0) - (keys.turnLeft ? 1 : 0);
+  let forwardInput = (keys.forward ? 1 : 0) - (keys.backward ? 1 : 0);
+  if (joystick.active) {
+    turnInput = Math.abs(joystick.x) > DEADZONE ? joystick.x : 0;
+    forwardInput = Math.abs(joystick.y) > DEADZONE ? -joystick.y : 0; // drag up = forward
+  }
+  if (canAct && turnInput !== 0) {
+    character.root.rotation.y -= TURN_SPEED * turnInput * delta;
+  }
 
   // Forward/back movement along facing direction (frozen while talking)
-  const isMoving = canAct && (keys.forward || keys.backward);
+  const isMoving = canAct && forwardInput !== 0;
   if (isMoving) {
-    const dirSign = keys.forward ? 1 : -1;
     moveDir.set(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), character.root.rotation.y);
     candidatePos
       .copy(character.root.position)
-      .addScaledVector(moveDir, dirSign * WALK_SPEED * gameState.speedMultiplier * delta);
+      .addScaledVector(moveDir, forwardInput * WALK_SPEED * gameState.speedMultiplier * delta);
 
     // Push the candidate position out of any obstacle it would land inside
     // (simple circle-vs-circle collision against houses and trees).

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Julia Aud and the Search for Sofia</title>
   <style>
     html, body {
@@ -12,11 +13,41 @@
       height: 100%;
       background: #bdeaff;
       font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+      touch-action: none; /* the canvas is a game surface, not a scroll area */
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
     }
     #game-canvas {
       display: block;
       width: 100vw;
       height: 100vh;
+      touch-action: none;
+    }
+    /* Floating virtual joystick (appears under the thumb on touch) */
+    #joystick-base {
+      display: none;
+      position: absolute;
+      width: 110px;
+      height: 110px;
+      margin-left: -55px;
+      margin-top: -55px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.25);
+      border: 3px solid rgba(255, 182, 193, 0.7);
+      pointer-events: none;
+      z-index: 5;
+    }
+    #joystick-knob {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 48px;
+      height: 48px;
+      margin-left: -24px;
+      margin-top: -24px;
+      border-radius: 50%;
+      background: rgba(255, 143, 179, 0.85);
+      border: 3px solid #fff;
     }
     #title-banner {
       position: absolute;
@@ -198,6 +229,26 @@
       text-align: center;
       min-width: 58px;
     }
+    /* Narrow (phone) screens: keep the title clear of the stats box */
+    @media (max-width: 700px) {
+      #title-banner {
+        font-size: 16px;
+        top: 10px;
+        left: 12px;
+        transform: none;
+        max-width: 55vw;
+      }
+      #stats-box {
+        font-size: 15px;
+        padding: 6px 12px;
+        top: 10px;
+        right: 10px;
+        min-width: 0;
+      }
+      #hint-banner {
+        font-size: 13px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -242,6 +293,7 @@
       <button id="intro-close">I'm coming, Sofia!</button>
     </div>
   </div>
+  <div id="joystick-base"><div id="joystick-knob"></div></div>
   <canvas id="game-canvas"></canvas>
   <script type="module" src="js/main.js"></script>
 </body>
