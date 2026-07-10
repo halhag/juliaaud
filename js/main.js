@@ -10,6 +10,7 @@ import {
   createCat,
   createDragon,
   createRunner,
+  createCrocodile,
 } from './npc.js';
 import {
   startDialogue,
@@ -27,6 +28,9 @@ import {
   STASH_TREES,
   DRAGON_TREE,
   RUNNER_TREES,
+  CROCMAN_TREES,
+  CROC_SLIP_TREE,
+  FARMER_TREES,
 } from './dialogue.js';
 
 const canvas = document.getElementById('game-canvas');
@@ -118,6 +122,26 @@ const cat = createCat(scene, world.npcSpots.cat);
 const dragon = createDragon(scene, world.npcSpots.dragon);
 const runner = createRunner(scene);
 
+// Snap Wetsleeves, the crocodile hustler, with Chompers waiting at his feet
+const crocman = createVillager(scene, 'SnapWetsleeves', world.npcSpots.crocman, -2.2, {
+  shirtColor: 0x3f7d55,
+  pantsColor: 0x2e4a3a,
+  hairColor: 0x2a2a2a,
+  bow: false,
+});
+const crocodile = createCrocodile(
+  scene,
+  world.npcSpots.crocman.clone().add(new THREE.Vector3(1.8, 0, 0.6))
+);
+// Old MacFeathers, the far-away chicken farmer
+const farmer = createVillager(scene, 'OldMacFeathers', world.npcSpots.farmer, 1.0, {
+  shirtColor: 0xc94f3a,
+  pantsColor: 0x5a6a3a,
+  hairColor: 0xcccccc,
+  bow: false,
+  beard: true,
+});
+
 // Dash Thunderlegs' race: roaming -> racing -> settle -> (chasing) -> done
 const runnerQuest = {
   state: 'roaming', // 'roaming' | 'racing' | 'settle' | 'chasing' | 'done'
@@ -137,6 +161,10 @@ const quests = {
   hasGlasses: false,
   scammed: 0, // coins lost to the Baron (the "investment tree" pays these back doubled)
   stashTaken: false,
+  crocHired: false, // paid Snap; Chompers is following (or has slid away)
+  crocSlipShown: false,
+  hasChickens: false, // bought from the farmer, not yet given to the dragon
+  gaveChickensToDragon: false,
 };
 const ENGAGE_DISTANCE = 3.2; // how close before an NPC starts talking
 const GUARD_ENGAGE_DISTANCE = 5; // the guard challenges from a bit further out
@@ -346,6 +374,16 @@ function maybeStartConversation() {
     character.root.rotation.y = Math.atan2(ddx, ddz);
     startDialogue(DRAGON_TREE, {
       ...goldCallbacks,
+      showIf: (key) =>
+        key === 'hasChickens' && quests.hasChickens && !quests.gaveChickensToDragon,
+      action: (key) => {
+        if (key === 'giveChickens') {
+          quests.hasChickens = false;
+          quests.gaveChickensToDragon = true;
+          document.getElementById('stat-chicken-row').style.display = 'none';
+          dragon.receiveChickens();
+        }
+      },
       onEnd: () => {
         if (!dragonMet) {
           dragonMet = true;
@@ -408,6 +446,50 @@ function maybeStartConversation() {
           runnerQuest.chaseGrace = 4; // another head start
           runner.startChase();
         }
+      },
+    });
+    return;
+  }
+
+  // Snap Wetsleeves, the crocodile hustler
+  if (
+    crocman.state === 'idle' &&
+    !crocman.hasBeenTalkedTo &&
+    distanceTo(crocman) <= ENGAGE_DISTANCE
+  ) {
+    faceEachOther(crocman);
+    const tree = crocodile.state === 'idle' ? CROCMAN_TREES.offer : CROCMAN_TREES.hired;
+    startDialogue(quests.crocHired ? CROCMAN_TREES.spent : tree, {
+      ...goldCallbacks,
+      onEnd: (outcome) => {
+        if (outcome === 'hired') {
+          quests.crocHired = true;
+          crocodile.follow();
+          world.removeBeacon('crocman');
+        }
+        crocman.resumeIdle();
+      },
+    });
+    return;
+  }
+
+  // Old MacFeathers, the far-away chicken farmer
+  if (
+    farmer.state === 'idle' &&
+    !farmer.hasBeenTalkedTo &&
+    distanceTo(farmer) <= ENGAGE_DISTANCE
+  ) {
+    faceEachOther(farmer);
+    const soldOut = quests.hasChickens || quests.gaveChickensToDragon;
+    startDialogue(soldOut ? FARMER_TREES.sold : FARMER_TREES.sell, {
+      ...goldCallbacks,
+      onEnd: (outcome) => {
+        if (outcome === 'boughtChickens') {
+          quests.hasChickens = true;
+          document.getElementById('stat-chicken-row').style.display = '';
+          world.removeBeacon('farmer');
+        }
+        farmer.resumeIdle();
       },
     });
     return;
@@ -658,6 +740,10 @@ window.__debug = {
   dragon,
   runner,
   runnerQuest,
+  crocman,
+  crocodile,
+  farmer,
+  quests,
 };
 
 // ---- Main loop ----
@@ -736,7 +822,31 @@ function animate() {
   wizard.update(delta);
   dragon.update(delta);
   runner.update(delta, character.root.position);
+  crocman.update(delta);
+  farmer.update(delta);
   for (const enc of questEncounters) enc.npc.update(delta);
+
+  // ---- Chompers the crocodile ----
+  crocodile.update(
+    delta,
+    character.root.position,
+    WALK_SPEED * gameState.speedMultiplier,
+    world.castle.center,
+    world.castle.moatEscape
+  );
+  // When Chompers reaches the moat and vanishes, play the little payoff once
+  if (
+    crocodile.isGone() &&
+    !quests.crocSlipShown &&
+    !isDialogueActive() &&
+    !introOpen &&
+    !won &&
+    !lost
+  ) {
+    quests.crocSlipShown = true;
+    keys.forward = keys.backward = keys.turnLeft = keys.turnRight = false;
+    startDialogue(CROC_SLIP_TREE, { ...goldCallbacks, onEnd: () => {} });
+  }
 
   // ---- The race to the castle ----
   if (runnerQuest.state === 'racing') {
@@ -773,7 +883,16 @@ function animate() {
 
   // Once she has walked far enough away, NPCs may re-engage (unless huffy,
   // gone for good, or stepped aside)
-  for (const npc of [baron, guard, wizard, dragon, runner, ...questEncounters.map((e) => e.npc)]) {
+  for (const npc of [
+    baron,
+    guard,
+    wizard,
+    dragon,
+    runner,
+    crocman,
+    farmer,
+    ...questEncounters.map((e) => e.npc),
+  ]) {
     if (npc.hasBeenTalkedTo && !inDialogue && distanceTo(npc) > REENGAGE_DISTANCE) {
       npc.hasBeenTalkedTo = false;
     }

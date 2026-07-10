@@ -683,6 +683,162 @@ export const STASH_TREES = {
   },
 };
 
+// ---- Snap Wetsleeves and his crocodile: the escape "plan" ----
+export const CROCMAN_TREES = {
+  offer: {
+    start: 'greet',
+    name: 'Snap Wetsleeves',
+    nodes: {
+      greet: {
+        npc: "Pssst. Over here. (A damp fellow in a raincoat gestures. A large crocodile lies patiently at his feet.) Name's Snap Wetsleeves. This here is Chompers. We're in the... liberation business. You look like someone with a friend who needs LIBERATING.",
+        choices: [
+          { text: 'Have you seen my friend Sofia?', go: 'reveal' },
+          { text: 'What does the crocodile do?', go: 'reveal' },
+          { text: '(back away from the damp man)', end: 'left' },
+        ],
+      },
+      reveal: {
+        npc: "Sofia? Locked in the Wicked Orange King's castle, poor thing. But here's the beauty of it: guards are SCARED of crocodiles. Everybody is! For just 3 gold coins, Chompers here follows you to the castle, scares off that guard, and your friend walks FREE. Foolproof!",
+        choices: [
+          { text: 'Deal! Here are 3 coins!', payAttempt: 3 },
+          { text: 'Is Chompers... reliable?', go: 'reliable' },
+          { text: '(this seems too easy)', end: 'left' },
+        ],
+      },
+      reliable: {
+        npc: "Reliable?! Chompers has scared off DOZENS of guards! Well. Chompers has been PRESENT while dozens of guards were scared. Correlation, causation, who's counting? He's a professional. Look at that professional face. 3 coins, and freedom is yours!",
+        choices: [
+          { text: 'Alright, 3 coins!', payAttempt: 3 },
+          { text: 'Why is he so... slow-looking?', go: 'slow' },
+          { text: '(walk away)', end: 'left' },
+        ],
+      },
+      slow: {
+        npc: "Slow? That's not slow, that's MENACE. He's SAVOURING the moment. Crocodiles conserve energy -- ancient predators, very wise. He'll get there when he gets there, and when he does? Curtains for that guard. 3 coins, friend. Best deal in the Kingdom!",
+        choices: [
+          { text: "Fine, 3 coins. Let's do it!", payAttempt: 3 },
+          { text: '(keep your coins for now)', end: 'left' },
+          { text: 'You said "wet sleeves" -- why?', go: 'sleeves' },
+        ],
+      },
+      sleeves: {
+        npc: "Occupational hazard. You spend enough time coaxing crocodiles out of ponds, your sleeves stay a bit... aquatic. It's a LOOK. It says trust. Now -- 3 coins?",
+        choices: [
+          { text: 'Okay okay, 3 coins!', payAttempt: 3 },
+          { text: '(back away slowly)', end: 'left' },
+        ],
+      },
+      notEnough: {
+        npc: "Only got... let me see... not 3 coins, that's for sure. No coins, no Chompers! Liberation isn't FREE, friend. Come back when your purse is heavier!",
+        end: 'left',
+        continueLabel: "(I'll find more coins)",
+      },
+      paid: {
+        npc: "PLEASURE doing business! Go on, Chompers -- follow the nice child to the castle! (Chompers slowly turns his head toward you and blinks.) He's ON it. Just lead the way. Freedom awaits! ...Probably! No refunds!",
+        end: 'hired',
+        continueLabel: '(lead Chompers to the castle!)',
+      },
+    },
+  },
+  hired: {
+    start: 'greet',
+    name: 'Snap Wetsleeves',
+    nodes: {
+      greet: {
+        npc: "How's the liberation going? Chompers behaving? He's a GOOD boy. Slow, but good. Just get him to that castle and your troubles are OVER. No need to thank me -- well, you already paid, so, you know. Off you go!",
+        end: 'left',
+        continueLabel: '(keep leading the crocodile)',
+      },
+    },
+  },
+  spent: {
+    start: 'greet',
+    name: 'Snap Wetsleeves',
+    nodes: {
+      greet: {
+        npc: "Chompers made it to the castle? Wonderful! Guard scared off, friend rescued, everyone's -- what? He jumped in the MOAT? ...Ah. Yes. He does that. Loves a good moat. Slippery little... well! No refunds, that was clearly stated! Good day!",
+        end: 'left',
+        continueLabel: '(seethe quietly)',
+      },
+    },
+  },
+};
+
+// A tiny narrator beat when Chompers reaches the castle and bails
+export const CROC_SLIP_TREE = {
+  start: 'greet',
+  name: '...',
+  nodes: {
+    greet: {
+      npc: 'Chompers arrives at the castle at last! He eyes the guard. He eyes the moat. He eyes the guard again... and slides into the cool blue water with a contented little sploosh. He is gone. The guard has not even looked up. Sofia remains, very much, in prison.',
+      end: 'left',
+      continueLabel: '(...that rascal)',
+    },
+  },
+};
+
+// ---- Old MacFeathers, the far-away chicken farmer ----
+export const FARMER_TREES = {
+  sell: {
+    start: 'greet',
+    name: 'Old MacFeathers',
+    nodes: {
+      greet: {
+        npc: "Well well! A visitor, all the way out HERE! Nobody comes this far -- that's how I like it, and how the chickens like it. Say, you look like someone who could use some CHICKENS. Finest in the Kingdom! 3 coins for a whole flock!",
+        choices: [
+          { text: 'Sure, I\'ll take some chickens! (3 coins)', payAttempt: 3 },
+          { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'farmer' },
+          { text: 'What would I even do with chickens?', go: 'why' },
+          { text: '(head back the long way)', end: 'left' },
+        ],
+      },
+      sofiaAsk: {
+        npc: "Sofia? Out HERE? Ha! The only souls this far out are me, the chickens, and the occasional confused seagull. Whoever you're after, she's back THAT way, toward the castle and all that fuss. Now -- chickens?",
+        choices: [
+          { text: "Right. I'll take the chickens! (3 coins)", payAttempt: 3 },
+          { text: '(start the long walk back)', end: 'left' },
+        ],
+      },
+      why: {
+        npc: "Do with 'em? EVERYTHING! Eggs! Company! Feathers for a fancy hat! And I hear -- now this is just a rumor -- that a certain large scaly fellow to the south is VERY fond of a chicken or three. Just saying. 3 coins!",
+        choices: [
+          { text: 'A scaly fellow, you say? (3 coins)', payAttempt: 3 },
+          { text: 'Tell me more about this scaly fellow.', go: 'dragonHint' },
+          { text: '(walk away, thinking)', end: 'left' },
+        ],
+      },
+      dragonHint: {
+        npc: "Big dragon. Lies about in the grass all day. Used to be TERRIFYING, they say. Now he mostly reminisces. But bring that one some chickens and I reckon he'd be your friend for life. Or at least until the chickens run out. So -- flock of chickens? 3 coins!",
+        choices: [
+          { text: 'Yes! A flock, please! (3 coins)', payAttempt: 3 },
+          { text: '(head off toward the dragon)', end: 'left' },
+        ],
+      },
+      notEnough: {
+        npc: "Hmm, that's not 3 coins, friend. Chickens don't raise themselves! Well -- they do, mostly, but the PRINCIPLE stands. Come back when you're flush!",
+        end: 'left',
+        continueLabel: "(trudge off, chickenless)",
+      },
+      paid: {
+        npc: "There you go -- one fine flock! Mind, they'll follow you about making a racket, that's just chickens for you. Safe travels, and give my regards to any scaly fellows you happen to meet! (You are now, unmistakably, carrying chickens.)",
+        end: 'boughtChickens',
+        continueLabel: '(gather up the chickens)',
+      },
+    },
+  },
+  sold: {
+    start: 'greet',
+    name: 'Old MacFeathers',
+    nodes: {
+      greet: {
+        npc: "Back already? The next flock's not ready -- these things take TIME and a great deal of clucking. Come round at the next egg harvest! Long way to come for nothing, mind. Sorry about that.",
+        end: 'left',
+        continueLabel: '(the long walk back...)',
+      },
+    },
+  },
+};
+
 // ---- The Tired Old Dragon: a bottomless well of glory-days stories ----
 // Every branch leads deeper. The only exit is the "(slip away)" option.
 // This is a deliberate time-waster. He never does anything. Ever.
@@ -693,11 +849,72 @@ export const DRAGON_TREE = {
     greet: {
       npc: "Mmm? A visitor. Sit, sit. Or stand. I shall lie here, if it's all the same. In my day, of course, I would have INCINERATED you by now. Wonderful times. Did you know dragons once ruled this entire world?",
       choices: [
+        { text: 'I brought you CHICKENS!', go: 'chickenGift', action: 'giveChickens', showIf: 'hasChickens' },
         { text: 'You RULED the world?', go: 'ruled' },
         { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'dragon' },
         { text: 'Why are you just lying there?', go: 'lying' },
         { text: "(slip away while it's talking)", end: 'left' },
       ],
+    },
+    chickenGift: {
+      npc: "CHICKEN?! For ME?! (For the first time, the great head lifts CLEAN off the grass. An eye opens fully. Then the other.) Oh, you MAGNIFICENT child. REAL chicken. Roasted to... acceptable standards. This is the finest thing that has happened to me since the Tuesday. I must compose a NEW ODE at once!",
+      choices: [
+        { text: 'Recite the new ode!', go: 'chickenOde' },
+        { text: 'Will you help me rescue Sofia now?', go: 'rescueAsk' },
+        { text: '(slip away while it feasts)', end: 'left' },
+      ],
+    },
+    chickenOde: {
+      npc: "'Ode to a Gift Most Fowl.' -- O sudden hen, O unearned wing, / You come to me, a offering! / No knight I fought, no tribute won, / And yet -- a drumstick in the sun! -- ...I may weep. That is not smoke. Well. It is SOME smoke. But also emotion.",
+      choices: [
+        { text: 'Another! Another!', go: 'chickenOde2' },
+        { text: 'So... about rescuing Sofia?', go: 'rescueAsk' },
+        { text: '(leave him to his feast)', end: 'left' },
+      ],
+    },
+    chickenOde2: {
+      npc: "'Haiku, With Gratitude.' -- Small round generous / You did not have to bring these / And yet: here we are. -- ...I workshopped that final line for two centuries. Worth it. Now I have eaten, and I am HAPPY, and a happy dragon is a DANGEROUS thing. Ask me for something. Anything!",
+      choices: [
+        { text: 'Help me rescue Sofia from the castle!', go: 'rescueAsk' },
+        { text: 'Tell me about the glory days!', go: 'ruled' },
+        { text: '(slip away, sensing a catch)', end: 'left' },
+      ],
+    },
+    rescueAsk: {
+      npc: "Rescue your friend from the castle?! For a bringer of CHICKEN, I would do ANYTHING! (He shifts. Grass crunches. A wing twitches. This is the most he has moved in a hundred years.) Stand BACK, small one -- I shall RISE, and FLY, and reduce that castle to a warm and tasteful RUIN!",
+      choices: [
+        { text: 'YES! Do it! Save Sofia!', go: 'almostRise' },
+        { text: '...Are you actually going to get up?', go: 'beHonest' },
+        { text: '(brace for a castle siege)', go: 'almostRise' },
+      ],
+    },
+    almostRise: {
+      npc: "(The dragon inhales -- a vast, ancient, gathering breath. His shoulders lift. His knees begin, faintly, to SING. One great claw presses into the earth. For one heart-stopping moment, four thousand years of slumbering GLORY prepares to wake... and then...) ...Mmmm. You know. On reflection. A rescue of this MAGNITUDE really ought to be done on a FULL stomach. And properly rested.",
+      choices: [
+        { text: 'You just ATE! You have chickens!', go: 'moreChicken' },
+        { text: 'I knew it. You were never getting up.', go: 'beHonest' },
+        { text: '(sigh, and slip away)', end: 'left' },
+      ],
+    },
+    moreChicken: {
+      npc: "Three chickens?! Child, three chickens is a SNACK. A castle siege is CATERED. Bring me the Royal Tribute -- forty thousand chickens, roasted, PER WEEK -- and I shall storm that castle like it's Year 402 all over again! Those are the rates. I don't rise from this exact patch of grass for less.",
+      choices: [
+        { text: 'Forty THOUSAND? Per WEEK?!', go: 'tribute' },
+        { text: '(give up on the dragon)', go: 'beHonest' },
+      ],
+    },
+    tribute: {
+      npc: "The Royal Rate! I don't get out of bed -- literally, as you can plainly see -- for anything less. Three chickens buys you POETRY and my undying affection, both of which you now have in abundance. But a CASTLE SIEGE? That is a premium service, and my premium is measured in POULTRY.",
+      choices: [
+        { text: "So that's a no.", go: 'beHonest' },
+        { text: 'Fine. Recite another poem instead.', go: 'chickenOde2' },
+        { text: '(walk away, poorer in patience)', end: 'left' },
+      ],
+    },
+    beHonest: {
+      npc: "...No. No, I am not going to get up. I have not stormed a castle in four hundred years and I was not planning to begin on a TUESDAY. But the chicken was REAL, small one, and so is my gratitude. Go and rescue her YOURSELF. You have the aura for it -- I said so before. I shall be right here. Cheering. Internally. Very, very internally.",
+      end: 'left',
+      continueLabel: '(you knew, really)',
     },
     sofiaAsk: {
       npc: "Sofia... Sofia... Is she a chicken? No? A knight, then? Also no? Hm. Then I confess she has escaped my notice entirely. Most things that are neither chicken nor knight do. Now -- where was I? Ah yes. GLORY.",
@@ -1409,9 +1626,14 @@ function showNode(id, ctx = {}) {
 
   for (const choice of node.choices) {
     if (choice.once && usedOnceChoices.has(choice.once)) continue; // already asked
+    if (choice.showIf) {
+      const ok = current.callbacks.showIf ? current.callbacks.showIf(choice.showIf) : false;
+      if (!ok) continue; // conditional choice not currently available
+    }
     choicesEl.appendChild(
       makeButton(choice.text, () => {
         if (choice.once) usedOnceChoices.add(choice.once);
+        if (choice.action && current.callbacks.action) current.callbacks.action(choice.action);
         if (choice.leave) {
           leaveAttempts += 1;
           showNode(leaveAttempts >= 2 ? 'byebye' : 'insist');

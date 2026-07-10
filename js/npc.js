@@ -514,12 +514,187 @@ export function createDragon(scene, position) {
     resumeIdle() {
       if (state === 'talking') state = 'idle';
     },
+    // A gift of chickens: a little pile appears by his snout
+    receiveChickens() {
+      const pile = new THREE.Group();
+      const chickenBodyMat = new THREE.MeshStandardMaterial({ color: 0xf3f0e8, roughness: 0.9 });
+      const beakMat = new THREE.MeshStandardMaterial({ color: 0xffb43a, roughness: 0.7 });
+      const combMat = new THREE.MeshStandardMaterial({ color: 0xe0503a, roughness: 0.8 });
+      [
+        [3.9, 0.35],
+        [4.3, -0.2],
+        [4.15, 0.55],
+      ].forEach(([cx, cz]) => {
+        const chicken = new THREE.Group();
+        const cbody = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), chickenBodyMat);
+        cbody.scale.set(1, 0.9, 1.2);
+        const chead = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), chickenBodyMat);
+        chead.position.set(0, 0.18, 0.16);
+        const beak = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.1, 6), beakMat);
+        beak.rotation.x = Math.PI / 2;
+        beak.position.set(0, 0.18, 0.29);
+        const comb = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), combMat);
+        comb.position.set(0, 0.29, 0.14);
+        chicken.add(cbody, chead, beak, comb);
+        chicken.position.set(cx, 0.2, cz);
+        chicken.rotation.y = Math.random() * Math.PI * 2;
+        pile.add(chicken);
+      });
+      root.add(pile);
+    },
     update(delta) {
       idleTime += delta;
       // Slow, weary breathing
       const breathe = 1 + Math.sin(idleTime * 0.9) * 0.03;
       body.scale.set(1.5 * breathe, 0.75 * breathe, 1 * breathe);
       headGroup.position.y = 0.75 + Math.sin(idleTime * 0.9) * 0.03;
+    },
+  };
+}
+
+// A hireable crocodile. Sits by its owner until paid for, then follows Julia
+// Aud at a THIRD of her speed. If it reaches the castle it spots the moat,
+// makes a beeline for the water, and vanishes -- helping nobody.
+export function createCrocodile(scene, position) {
+  const root = new THREE.Group();
+  root.name = 'Crocodile';
+  root.position.copy(position);
+
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0x5a8f4a, roughness: 0.85 });
+  const bellyMat = new THREE.MeshStandardMaterial({ color: 0xcdd98a, roughness: 0.9 });
+  const toothMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 10), skinMat);
+  body.scale.set(1, 0.55, 1.9);
+  body.position.y = 0.35;
+  body.castShadow = true;
+  root.add(body);
+  const belly = new THREE.Mesh(new THREE.SphereGeometry(0.42, 10, 8), bellyMat);
+  belly.scale.set(0.95, 0.4, 1.7);
+  belly.position.y = 0.22;
+  root.add(belly);
+
+  // Long snout out the front (+z), with a row of little teeth
+  const snoutGroup = new THREE.Group();
+  snoutGroup.position.set(0, 0.32, 0.95);
+  root.add(snoutGroup);
+  const upperJaw = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.22, 0.9), skinMat);
+  upperJaw.position.y = 0.06;
+  upperJaw.castShadow = true;
+  const lowerJaw = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.14, 0.85), skinMat);
+  lowerJaw.position.set(0, -0.1, -0.02);
+  snoutGroup.add(upperJaw, lowerJaw);
+  for (let i = 0; i < 5; i++) {
+    const t = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.1, 4), toothMat);
+    t.position.set(-0.18 + i * 0.09, -0.02, 0.1 + (i % 2) * 0.25);
+    snoutGroup.add(t);
+  }
+  // Eyes on top of the head
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.3 });
+  [-0.16, 0.16].forEach((ex) => {
+    const bump = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), skinMat);
+    bump.position.set(ex, 0.55, 0.45);
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), eyeMat);
+    eye.position.set(ex, 0.62, 0.5);
+    root.add(bump, eye);
+  });
+
+  // Ridged tail tapering out the back
+  const tailSegs = [];
+  for (let i = 0; i < 4; i++) {
+    const seg = new THREE.Mesh(new THREE.ConeGeometry(0.28 - i * 0.06, 0.5, 6), skinMat);
+    seg.rotation.x = -Math.PI / 2;
+    seg.position.set(0, 0.32, -0.9 - i * 0.42);
+    seg.castShadow = true;
+    root.add(seg);
+    tailSegs.push(seg);
+  }
+  // Stubby splayed legs
+  const legs = [];
+  [
+    [0.42, 0.5],
+    [-0.42, 0.5],
+    [0.42, -0.4],
+    [-0.42, -0.4],
+  ].forEach(([lx, lz]) => {
+    const leg = new THREE.Mesh(new THREE.SphereGeometry(0.14, 6, 6), skinMat);
+    leg.scale.set(0.8, 0.5, 1.1);
+    leg.position.set(lx, 0.12, lz);
+    root.add(leg);
+    legs.push(leg);
+  });
+
+  scene.add(root);
+
+  let state = 'idle'; // 'idle' | 'following' | 'sliding' | 'gone'
+  let waddleTime = 0;
+  let escapeTarget = null;
+  let sinkTimer = 0;
+
+  function faceToward(x, z) {
+    root.rotation.y = Math.atan2(x - root.position.x, z - root.position.z);
+  }
+
+  return {
+    root,
+    get state() {
+      return state;
+    },
+    follow() {
+      state = 'following';
+    },
+    // Reached the castle: peel off toward the moat water and vanish
+    slideToWater(target) {
+      state = 'sliding';
+      escapeTarget = target.clone();
+    },
+    isGone() {
+      return state === 'gone';
+    },
+    update(delta, playerPos, playerSpeed, castleCenter, moatEscape) {
+      waddleTime += delta;
+      const waddle = Math.sin(waddleTime * 6) * 0.09;
+      root.rotation.z = waddle;
+      tailSegs.forEach((seg, i) => {
+        seg.position.x = Math.sin(waddleTime * 6 - i * 0.6) * 0.12 * (i + 1) * 0.3;
+      });
+
+      if (state === 'following') {
+        const dx = playerPos.x - root.position.x;
+        const dz = playerPos.z - root.position.z;
+        const dist = Math.hypot(dx, dz);
+        if (dist > 2.4) {
+          faceToward(playerPos.x, playerPos.z);
+          const step = (playerSpeed / 3) * delta; // a THIRD of her speed
+          root.position.x += (dx / dist) * step;
+          root.position.z += (dz / dist) * step;
+        }
+        // Near the castle? Head for the water instead of the guard.
+        if (
+          Math.hypot(root.position.x - castleCenter.x, root.position.z - castleCenter.z) < 30
+        ) {
+          this.slideToWater(moatEscape);
+        }
+      } else if (state === 'sliding') {
+        const dx = escapeTarget.x - root.position.x;
+        const dz = escapeTarget.z - root.position.z;
+        const dist = Math.hypot(dx, dz);
+        if (dist > 0.3) {
+          faceToward(escapeTarget.x, escapeTarget.z);
+          const step = 3.5 * delta;
+          root.position.x += (dx / dist) * step;
+          root.position.z += (dz / dist) * step;
+        } else {
+          // Slip under the surface with a happy little sink
+          sinkTimer += delta;
+          root.position.y = -sinkTimer * 0.6;
+          root.rotation.x = -sinkTimer * 0.4;
+          if (sinkTimer > 1.4) {
+            scene.remove(root);
+            state = 'gone';
+          }
+        }
+      }
     },
   };
 }

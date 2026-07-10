@@ -232,6 +232,8 @@ export function createWorld(scene) {
         [-90, -110, 7],
         [-20, -55, 6],
         [-58, -32, 9], // the tired old dragon's strategic recline
+        [55, -60, 6], // the crocodile hustler
+        [-140, 110, 6], // the far-away chicken farmer
       ].some(([qx, qz, r = 4]) => Math.hypot(x - qx, z - qz) < r)
     )
       continue;
@@ -458,6 +460,57 @@ export function createWorld(scene) {
   });
 
   worldGroup.add(castleGroup);
+
+  // ---- A little blue moat around the castle ----
+  // A ring of water, with a gap on the front (+z) side so the road, gate,
+  // and guard sit on a land causeway. Angle is measured atan2(relZ, relX);
+  // water covers everything except the front arc [50deg, 130deg].
+  const MOAT_INNER = 15;
+  const MOAT_OUTER = 22;
+  const MOAT_Y = 0.06;
+  const waterMat = new THREE.MeshStandardMaterial({
+    color: 0x4ba6dd,
+    roughness: 0.25,
+    metalness: 0.1,
+    // A little self-glow so the water still reads as bright blue even inside
+    // the castle's big shadow (which falls right across the moat).
+    emissive: 0x2f7bb0,
+    emissiveIntensity: 0.55,
+    transparent: true,
+    opacity: 0.92,
+    side: THREE.DoubleSide,
+  });
+  {
+    const startDeg = 130;
+    const endDeg = 410; // wraps past 360 back to 50, leaving [50,130] open
+    const segs = 96;
+    const positions = [];
+    const indices = [];
+    for (let i = 0; i <= segs; i++) {
+      const a = ((startDeg + (endDeg - startDeg) * (i / segs)) * Math.PI) / 180;
+      const cos = Math.cos(a);
+      const sin = Math.sin(a);
+      positions.push(
+        CASTLE_CENTER.x + cos * MOAT_INNER, MOAT_Y, CASTLE_CENTER.z + sin * MOAT_INNER,
+        CASTLE_CENTER.x + cos * MOAT_OUTER, MOAT_Y, CASTLE_CENTER.z + sin * MOAT_OUTER
+      );
+      if (i < segs) {
+        const b = i * 2;
+        indices.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
+      }
+    }
+    const moatGeo = new THREE.BufferGeometry();
+    moatGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    moatGeo.setIndex(indices);
+    const up = new Float32Array(positions.length);
+    for (let i = 1; i < up.length; i += 3) up[i] = 1;
+    moatGeo.setAttribute('normal', new THREE.BufferAttribute(up, 3));
+    const moat = new THREE.Mesh(moatGeo, waterMat);
+    moat.receiveShadow = false; // the castle's shadow would otherwise blacken it
+    worldGroup.add(moat);
+  }
+  // Where a hired crocodile makes its escape: a watered spot on the east side
+  const MOAT_ESCAPE = new THREE.Vector3(CASTLE_CENTER.x + 18, 0, CASTLE_CENTER.z + 6);
 
   // ---- The wizard's very tall, very thin tower ----
   const TOWER_POS = new THREE.Vector3(98, 0, -95);
@@ -956,6 +1009,8 @@ export function createWorld(scene) {
   addBeacon('baron', 5, 3, QUEST_YELLOW); // follows him as he paces
   addBeacon('dragon', -58, -32, 0x6dbf5e);
   addBeacon('runner', -95, 85, 0xff8c69); // follows him as he runs
+  addBeacon('crocman', 55, -60, 0x3fae6b); // the crocodile hustler
+  addBeacon('farmer', -140, 110, 0xffcf6e); // the far-away chicken farmer
 
   // The dragon is a large, permanent, immovable object (his words)
   obstacles.push({ x: -58, z: -32, radius: 3.4 });
@@ -969,6 +1024,8 @@ export function createWorld(scene) {
     engineer: ENGINEER_SPOT.clone(),
     cat: new THREE.Vector3(20, 0, -40),
     dragon: new THREE.Vector3(-58, 0, -32),
+    crocman: new THREE.Vector3(55, 0, -60),
+    farmer: new THREE.Vector3(-140, 0, 110),
     raceFinish: new THREE.Vector3(104, 0, -110), // road's end, short of the guard
   };
 
@@ -1016,6 +1073,7 @@ export function createWorld(scene) {
       center: CASTLE_CENTER.clone(),
       gatePos: GATE_POS.clone(),
       guardPos: GUARD_POS.clone(),
+      moatEscape: MOAT_ESCAPE.clone(),
     },
     wizardTower: {
       pos: TOWER_POS.clone(),
