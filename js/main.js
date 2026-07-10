@@ -831,8 +831,7 @@ function animate() {
     delta,
     character.root.position,
     WALK_SPEED * gameState.speedMultiplier,
-    world.castle.center,
-    world.castle.moatEscape
+    world.castle.center
   );
   // When Chompers reaches the moat and vanishes, play the little payoff once
   if (

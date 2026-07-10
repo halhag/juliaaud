@@ -628,7 +628,8 @@ export function createCrocodile(scene, position) {
 
   let state = 'idle'; // 'idle' | 'following' | 'sliding' | 'gone'
   let waddleTime = 0;
-  let escapeTarget = null;
+  let escapeWaypoints = []; // route AROUND the castle to the far moat
+  let wpIndex = 0;
   let sinkTimer = 0;
 
   function faceToward(x, z) {
@@ -643,15 +644,22 @@ export function createCrocodile(scene, position) {
     follow() {
       state = 'following';
     },
-    // Reached the castle: peel off toward the moat water and vanish
-    slideToWater(target) {
+    // Reached the castle: don't barge through the guard/gate. Loop around the
+    // WEST side (away from the front-east guard) and slip into the far moat.
+    slideToWater(c) {
       state = 'sliding';
-      escapeTarget = target.clone();
+      wpIndex = 0;
+      escapeWaypoints = [
+        new THREE.Vector3(c.x - 4, 0, c.z + 20), // back off from the gate
+        new THREE.Vector3(c.x - 27, 0, c.z + 6), // swing out west, clear of towers
+        new THREE.Vector3(c.x - 27, 0, c.z - 12), // down the far west side
+        new THREE.Vector3(c.x - 15.6, 0, c.z - 9), // into the west-back moat, and sink
+      ];
     },
     isGone() {
       return state === 'gone';
     },
-    update(delta, playerPos, playerSpeed, castleCenter, moatEscape) {
+    update(delta, playerPos, playerSpeed, castleCenter) {
       waddleTime += delta;
       const waddle = Math.sin(waddleTime * 6) * 0.09;
       root.rotation.z = waddle;
@@ -673,17 +681,22 @@ export function createCrocodile(scene, position) {
         if (
           Math.hypot(root.position.x - castleCenter.x, root.position.z - castleCenter.z) < 30
         ) {
-          this.slideToWater(moatEscape);
+          this.slideToWater(castleCenter);
         }
       } else if (state === 'sliding') {
-        const dx = escapeTarget.x - root.position.x;
-        const dz = escapeTarget.z - root.position.z;
-        const dist = Math.hypot(dx, dz);
-        if (dist > 0.3) {
-          faceToward(escapeTarget.x, escapeTarget.z);
-          const step = 3.5 * delta;
-          root.position.x += (dx / dist) * step;
-          root.position.z += (dz / dist) * step;
+        if (wpIndex < escapeWaypoints.length) {
+          const t = escapeWaypoints[wpIndex];
+          const dx = t.x - root.position.x;
+          const dz = t.z - root.position.z;
+          const dist = Math.hypot(dx, dz);
+          if (dist > 0.4) {
+            faceToward(t.x, t.z);
+            const step = 6 * delta;
+            root.position.x += (dx / dist) * step;
+            root.position.z += (dz / dist) * step;
+          } else {
+            wpIndex += 1;
+          }
         } else {
           // Slip under the surface with a happy little sink
           sinkTimer += delta;
