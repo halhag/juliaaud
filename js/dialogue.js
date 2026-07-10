@@ -25,7 +25,7 @@ export const BARON_TREE = {
       npc: 'Psst! Hey! Over here! Yes, you with the magnificent bow! I am Baron von Patch, world-famous businessman! Tell me... do you like GOLD?',
       choices: [
         { text: 'Ooh, I do have a few coins...', go: 'pitch' },
-        { text: "I'm looking for my friend Sofia. Have you seen her?", go: 'sofia' },
+        { text: "I'm looking for my friend Sofia. Have you seen her?", go: 'sofia', once: 'baron' },
         { text: "Sorry, I'm in a hurry to find my friend!", leave: true },
       ],
     },
@@ -208,6 +208,7 @@ export const WIZARD_TREE = {
       choices: [
         { text: 'How did you know?!', go: 'knew' },
         { text: 'What do you sell?', go: 'shop' },
+        { text: 'Have you seen my friend Sofia?', go: 'sofia', once: 'wizard' },
         { text: '(leave the wizard alone)', end: 'left' },
       ],
     },
@@ -296,6 +297,7 @@ export const BRAMBLE_TREES = {
         npc: "Oh dear, oh dear! My cat Waffles chased a butterfly and simply VANISHED! She's very orange and very round. Last seen zooming south, past the big road!",
         choices: [
           { text: "I'll find her for you!", end: 'accept' },
+          { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'bramble' },
           { text: "What's in it for me?", go: 'reward' },
           { text: "(no time for cats, sorry)", end: 'left' },
         ],
@@ -314,6 +316,13 @@ export const BRAMBLE_TREES = {
           { text: "On my way!", end: 'accept' },
           { text: 'Is she friendly?', go: 'friendly' },
           { text: '(leave)', end: 'left' },
+        ],
+      },
+      sofiaAsk: {
+        npc: "Sofia? Is she orange? Does she zoom? No? Oh dear, then I really can't help -- I only keep track of cats. And barely that, evidently. WAFFLES!",
+        choices: [
+          { text: 'Right. About your cat, then.', go: 'greet' },
+          { text: '(leave her to her calling)', end: 'left' },
         ],
       },
       friendly: {
@@ -367,9 +376,16 @@ export const CAT_TREES = {
     name: 'A Very Orange Cat',
     nodes: {
       greet: {
-        npc: 'Mrow? (A very round, very orange cat ignores you professionally.)',
+        npc: 'Mrow? (A very round, very orange cat regards you with professional indifference.)',
+        choices: [
+          { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'cat' },
+          { text: '(leave the cat to its business)', end: 'left' },
+        ],
+      },
+      sofiaAsk: {
+        npc: 'Mrow. (The cat has never heard of Sofia. The cat has never heard of anyone. The cat is complete.)',
         end: 'left',
-        continueLabel: '(leave the cat to its business)',
+        continueLabel: "(of course. it's a cat.)",
       },
     },
   },
@@ -407,8 +423,16 @@ export const BAKER_TREES = {
         npc: "Perfect timing, dear! I baked a raspberry pie for my sister Sylvie, but my oven needs me THIS instant. Could you deliver it? She lives in the hamlet to the south-west, across the fields. She pays 4 coins on delivery -- she's good for it!",
         choices: [
           { text: "I'll deliver it!", end: 'accept' },
+          { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'baker' },
           { text: 'Which hamlet, exactly?', go: 'directions' },
           { text: '(no time for pies)', end: 'left' },
+        ],
+      },
+      sofiaAsk: {
+        npc: "Sofia? Hmm. Nobody by that name ordered bread this week, and I know EVERYONE by their bread. No rye, no records, dear. Now -- the PIE. Focus!",
+        choices: [
+          { text: 'Right, the pie.', go: 'greet' },
+          { text: '(back away from the bakery)', end: 'left' },
         ],
       },
       directions: {
@@ -460,8 +484,15 @@ export const SYLVIE_TREES = {
     nodes: {
       greet: {
         npc: 'My sister owes me a pie, you know. Raspberry. She ALWAYS forgets. Sisters!',
+        choices: [
+          { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'sylvie' },
+          { text: '(nod sympathetically)', end: 'left' },
+        ],
+      },
+      sofiaAsk: {
+        npc: "Sofia? Hmm. I know a Sonja, a Fiona, and a Sofie -- no, wait, Sofie is the goat. Sorry, dear. Now, if you see a PIE out there, that's a different story entirely.",
         end: 'left',
-        continueLabel: '(nod sympathetically)',
+        continueLabel: '(thank her anyway)',
       },
     },
   },
@@ -499,8 +530,16 @@ export const TOBIAS_TREES = {
         npc: "Blast and bother! I dropped my spectacles somewhere along the castle road and now the whole Kingdom is a smudge! You there -- blurry child -- find them and I'll pay 5 gold coins!",
         choices: [
           { text: "I'll find them!", end: 'accept' },
+          { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'tobias' },
           { text: 'Where exactly did you drop them?', go: 'where' },
           { text: "(leave the blurry man alone)", end: 'left' },
+        ],
+      },
+      sofiaAsk: {
+        npc: "Seen her? Child, I can't even see YOU. You are a blur asking me about a rumor. Find my spectacles and I shall gladly LOOK for your Sofia. That's called a bargain.",
+        choices: [
+          { text: "Fine -- I'll find the glasses!", end: 'accept' },
+          { text: '(leave the blurry man be)', end: 'left' },
         ],
       },
       where: {
@@ -565,7 +604,16 @@ export const ENGINEER_TREE = {
       npc: 'Ah! A visitor! I am Edison Gearwhistle: engineer, inventor, and proud owner of that MAGNIFICENT machine right there. Care for a spin in my Time Machine? Free of charge!',
       choices: [
         { text: 'Yes! Spin me!', ride: true },
+        { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'engineer' },
         { text: 'What does it do, exactly?', go: 'what' },
+        { text: '(back away from the machine)', end: 'left' },
+      ],
+    },
+    sofiaAsk: {
+      npc: "Sofia! Hmm! No. BUT -- consider this: if she is lost, she might be lost in TIME. No? Just regular lost? Shame. The machine can't help with that. It barely helps with anything! Anyway -- fancy a spin?",
+      choices: [
+        { text: '...Sure. Spin me!', ride: true },
+        { text: 'What does it do again?', go: 'what' },
         { text: '(back away from the machine)', end: 'left' },
       ],
     },
@@ -646,8 +694,17 @@ export const DRAGON_TREE = {
       npc: "Mmm? A visitor. Sit, sit. Or stand. I shall lie here, if it's all the same. In my day, of course, I would have INCINERATED you by now. Wonderful times. Did you know dragons once ruled this entire world?",
       choices: [
         { text: 'You RULED the world?', go: 'ruled' },
+        { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'dragon' },
         { text: 'Why are you just lying there?', go: 'lying' },
         { text: "(slip away while it's talking)", end: 'left' },
+      ],
+    },
+    sofiaAsk: {
+      npc: "Sofia... Sofia... Is she a chicken? No? A knight, then? Also no? Hm. Then I confess she has escaped my notice entirely. Most things that are neither chicken nor knight do. Now -- where was I? Ah yes. GLORY.",
+      choices: [
+        { text: '(sigh) Fine. Tell me about the glory.', go: 'ruled' },
+        { text: 'You are not helpful at all.', go: 'lying' },
+        { text: '(slip away to look for actual help)', end: 'left' },
       ],
     },
     ruled: {
@@ -1095,6 +1152,15 @@ export const RUNNER_TREES = {
         npc: "WHOA! You stopped me! Do you know how RARE that is?! (He jogs in place, furiously.) Dash Thunderlegs, fastest legs in the Kingdom, pleasure, hello, hi. You've got runner's calves, kid. I can tell. RACE ME TO THE CASTLE. Two gold coins says I win!",
         choices: [
           { text: "You're on! (bet 2 coins)", requireGold: 2, go: 'go', elseGo: 'broke' },
+          { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'runner' },
+          { text: 'Why are you always running?', go: 'why' },
+          { text: '(no time for races)', end: 'left' },
+        ],
+      },
+      sofiaAsk: {
+        npc: "Sofia?! Is she FAST? If she's fast I've DEFINITELY seen her -- I see everyone fast! ...Sofia... nope, doesn't ring a bell. Must be slow. No offense! Some of my best friends are slow! Actually no, they're all fast. ANYWAY. Race?",
+        choices: [
+          { text: "Ugh, fine. You're on! (bet 2 coins)", requireGold: 2, go: 'go', elseGo: 'broke' },
           { text: 'Why are you always running?', go: 'why' },
           { text: '(no time for races)', end: 'left' },
         ],
@@ -1283,6 +1349,9 @@ let current = null; // { tree, callbacks, ctx }
 // stray click/tap at the moment of engagement would otherwise pick a choice
 // -- possibly "(leave)" -- before the player has even read the text).
 let clickShieldUntil = 0;
+// Choices marked {once: 'some-key'} disappear forever after being picked --
+// used for the ask-about-Sofia option every character offers exactly once.
+const usedOnceChoices = new Set();
 
 export function isDialogueActive() {
   return active;
@@ -1339,8 +1408,10 @@ function showNode(id, ctx = {}) {
   }
 
   for (const choice of node.choices) {
+    if (choice.once && usedOnceChoices.has(choice.once)) continue; // already asked
     choicesEl.appendChild(
       makeButton(choice.text, () => {
+        if (choice.once) usedOnceChoices.add(choice.once);
         if (choice.leave) {
           leaveAttempts += 1;
           showNode(leaveAttempts >= 2 ? 'byebye' : 'insist');
