@@ -88,7 +88,7 @@ const baron = createBaron(scene);
 const guard = createGuard(scene, world.castle.guardPos);
 const sofia = createSofia(scene, world.sofiaPosition);
 const wizard = createWizard(scene, world.wizardTower.wizardPos, world.wizardTower.facing);
-let wizardSold = false;
+let wizardMet = false;
 
 // Quest folk in the hamlets, the engineer, and one very orange cat
 const bramble = createVillager(scene, 'MrsBramble', world.npcSpots.bramble, Math.PI, {
@@ -266,9 +266,26 @@ const candidatePos = new THREE.Vector3();
 const gameState = {
   gold: 10,
   timeLeftSec: 15 * 60, // 15 minutes, counting down
-  speedMultiplier: 1, // doubled by Wizzo's Zoom-Zoom Zap
+  speedMultiplier: 1, // derived from the two speed potions (see recomputeSpeed)
   stunnedTimer: 0, // seconds left of meteor-bonk dizziness
+  // Wizzo's wares
+  hasZap: false, // Zoom-Zoom Zap: x2 speed
+  hasHalfSpeed: false, // Slow-Mo Sap: x0.5 speed (they compose: both = normal)
+  hasBrainSyrup: false, // does nothing (that's the joke)
+  hasWand: false, // Un-Magic Wand: inventory novelty
 };
+
+// Speed is the product of the two potions, so buying both nets normal speed.
+function recomputeSpeed() {
+  gameState.speedMultiplier =
+    (gameState.hasHalfSpeed ? 0.5 : 1) * (gameState.hasZap ? 2 : 1);
+}
+function updateItemHud() {
+  const m = gameState.speedMultiplier;
+  document.getElementById('stat-speed-row').style.display = m > 1 ? '' : 'none';
+  document.getElementById('stat-slow-row').style.display = m < 1 ? '' : 'none';
+  document.getElementById('stat-wand-row').style.display = gameState.hasWand ? '' : 'none';
+}
 
 // ---- Meteor bonks: comic dizziness, nothing worse ----
 const STUN_SECONDS = 3;
@@ -605,6 +622,7 @@ function maybeStartConversation() {
     faceEachOther(guard);
     startDialogue(GUARD_TREE, {
       ...goldCallbacks,
+      showIf: (key) => key === 'hasWand' && gameState.hasWand,
       onEnd: (outcome) => {
         if (outcome === 'paid') {
           world.openGate();
@@ -625,13 +643,31 @@ function maybeStartConversation() {
     distanceTo(wizard) <= 4.2
   ) {
     faceEachOther(wizard);
-    startDialogue(wizardSold ? WIZARD_SOLD_TREE : WIZARD_TREE, {
+    const allSold =
+      gameState.hasZap &&
+      gameState.hasHalfSpeed &&
+      gameState.hasBrainSyrup &&
+      gameState.hasWand;
+    startDialogue(allSold ? WIZARD_SOLD_TREE : WIZARD_TREE, {
       ...goldCallbacks,
-      onEnd: (outcome) => {
-        if (outcome === 'paid') {
-          wizardSold = true;
-          gameState.speedMultiplier = 2;
-          document.getElementById('stat-speed-row').style.display = '';
+      showIf: (key) => {
+        if (key === 'zapAvail') return !gameState.hasZap;
+        if (key === 'brainAvail') return !gameState.hasBrainSyrup;
+        if (key === 'halfAvail') return !gameState.hasHalfSpeed;
+        if (key === 'wandAvail') return !gameState.hasWand;
+        return false;
+      },
+      action: (key) => {
+        if (key === 'buyZap') gameState.hasZap = true;
+        else if (key === 'buyHalf') gameState.hasHalfSpeed = true;
+        else if (key === 'buyBrain') gameState.hasBrainSyrup = true;
+        else if (key === 'buyWand') gameState.hasWand = true;
+        recomputeSpeed();
+        updateItemHud();
+      },
+      onEnd: () => {
+        if (!wizardMet) {
+          wizardMet = true;
           world.removeBeacon('wizard');
         }
         wizard.resumeIdle();

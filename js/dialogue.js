@@ -148,7 +148,15 @@ export const GUARD_TREE = {
       npc: "Sofia! Ah yes... prisoner 24601... no, wait... 'Sofia', here she is. By decree of the Wicked Orange King: prisoner release requires a Release Tax of 20 GOLD coins. No coins, no Sofia. NO EXCEPTIONS!",
       choices: [
         { text: 'Here! Take the 20 coins!', payAttempt: 20 },
+        { text: '(brandish your magic wand at him!)', go: 'wandFail', showIf: 'hasWand' },
         { text: 'But Sofia is my best friend!', go: 'plead' },
+        { text: '(step back from the gate)', end: 'left' },
+      ],
+    },
+    wandFail: {
+      npc: "(You raise your wand with tremendous confidence and point it directly at the guard.) ...Is that a stick? It's a stick. Nice stick, though. Very pointy. Still 20 coins, mind -- magic doesn't scare me. I work for a WICKED ORANGE KING. I have seen THINGS. NEXT!",
+      choices: [
+        { text: '(lower the wand, dignity intact)', go: 'taxDemand' },
         { text: '(step back from the gate)', end: 'left' },
       ],
     },
@@ -199,90 +207,133 @@ export const GUARD_TREE = {
 };
 
 // ---- Wizzo the wizard: the Zoom-Zoom Zap shop ----
+// Wizzo's shop: a menu of dubious wares. Sold-out items hide themselves via
+// {showIf}; each purchase applies its effect via {action} and returns to the
+// menu. Prices: Zoom-Zoom Zap 2, Brain Booster Syrup 2, Slow-Mo Sap 1,
+// Un-Magic Wand 1.
 export const WIZARD_TREE = {
   start: 'greet',
   name: 'Wizzo the Wizard',
   nodes: {
     greet: {
-      npc: "Ahh! A customer! Welcome to Wizzo's Wondrous Wares -- the tallest, thinnest shop in all the Kingdom! I sense... yes... I sense you are in a TERRIBLE hurry!",
+      npc: "Ahh, a customer! Welcome to Wizzo's Wondrous Wares -- the tallest, thinnest shop in all the Kingdom! BEHOLD today's stock! (It is... eclectic. The seized-supply-cart situation is ONGOING.)",
       choices: [
-        { text: 'How did you know?!', go: 'knew' },
-        { text: 'What do you sell?', go: 'shop' },
-        { text: 'Have you seen my friend Sofia?', go: 'sofia', once: 'wizard' },
-        { text: '(leave the wizard alone)', end: 'left' },
+        { text: '⚡ Zoom-Zoom Zap -- 2 coins (go TWICE as fast!)', go: 'zapInfo', showIf: 'zapAvail' },
+        { text: '🧠 Brain Booster Syrup -- 2 coins (twice as smart!)', go: 'brainInfo', showIf: 'brainAvail' },
+        { text: '🐌 Slow-Mo Sap -- 1 coin (half speed, half price!)', go: 'halfInfo', showIf: 'halfAvail' },
+        { text: '🪄 Un-Magic Wand -- 1 coin (looks VERY real)', go: 'wandInfo', showIf: 'wandAvail' },
+        { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'wizard' },
+        { text: '(leave the shop)', end: 'left' },
       ],
     },
-    knew: {
-      npc: 'Wizards KNOW things! ...Also, you look quite sweaty. Now! To business!',
+    sofiaAsk: {
+      npc: "In the castle, I'd wager -- the King's 'guests' wait in the courtyard. A long way on small legs! Which is EXACTLY why you should peruse my fine merchandise. Browse! BROWSE!",
       choices: [
-        { text: 'So what do you sell?', go: 'shop' },
-        { text: "I'm looking for my friend Sofia.", go: 'sofia' },
-        { text: '(leave the wizard alone)', end: 'left' },
+        { text: 'Show me the stock again.', go: 'greet' },
+        { text: '(leave the shop)', end: 'left' },
       ],
     },
-    sofia: {
-      npc: "The castle, hmm? The King's 'guests' wait in the courtyard. A long way on small legs! You'll want QUICK FEET for that errand... which reminds me!",
+    // ---- Zoom-Zoom Zap (real: double speed) ----
+    zapInfo: {
+      npc: "The ZOOM-ZOOM ZAP! An enchantment of the feet -- walk TWICE as fast, FOREVER! Two gold coins. I have zapped DOZENS of feet and almost all of them still point forward!",
       choices: [
-        { text: 'Quick feet? Tell me more!', go: 'shop' },
-        { text: 'Do you know the Wicked Orange King?', go: 'king' },
-        { text: '(leave the wizard alone)', end: 'left' },
+        { text: 'Zap me! (2 coins)', payAttempt: { cost: 2, ok: 'zapPaid', action: 'buyZap' } },
+        { text: 'Maybe later.', go: 'greet' },
       ],
     },
-    king: {
-      npc: "Know him? He banned my flying carpet for 'airspace violations'! And his N.I.C.E. agents seized my supply cart at the border. 'Paperwork irregularities.' Bah!",
+    zapPaid: {
+      npc: '✨ ZAP! ✨ Feel the tingle? SPEEDY FEET! Quick like a bunny, swift like a seagull! What else can I interest you in?',
       choices: [
-        { text: 'So what CAN you sell me?', go: 'shop' },
-        { text: 'That sounds unfair.', go: 'unfair' },
-        { text: '(leave the wizard alone)', end: 'left' },
+        { text: 'Show me the rest of the stock.', go: 'greet' },
+        { text: '(zoom off)', end: 'left' },
       ],
     },
-    unfair: {
-      npc: "Unfair, unkind, and largely orange. Which is why I give N.I.C.E. discounts to anyone rescuing a friend from that castle! Well. Not discounts. But enthusiasm!",
+    // ---- Brain Booster Syrup (fake: does nothing) ----
+    brainInfo: {
+      npc: "BRAIN BOOSTER SYRUP! One sip and you are TWICE as smart! Twice the cleverness, two coins! It is scientifically... adjacent!",
       choices: [
-        { text: "Okay, okay -- what's for sale?", go: 'shop' },
-        { text: 'Enthusiasm is not a discount.', go: 'shop' },
-        { text: '(leave the wizard alone)', end: 'left' },
+        { text: 'I could be smarter. (2 coins)', payAttempt: { cost: 2, ok: 'brainPaid', action: 'buyBrain' } },
+        { text: 'That sounds fake.', go: 'brainDoubt' },
       ],
     },
-    shop: {
-      npc: "Today's special -- and today's EVERYTHING, thanks to the seized supply cart: the ZOOM-ZOOM ZAP! An enchantment of the feet. Walk TWICE as fast, FOREVER! Yours for a mere 2 gold coins!",
+    brainDoubt: {
+      npc: "FAKE?! It is HERBAL! There are BERRIES in it! Probably! Now -- twice as smart, two coins, yes?",
       choices: [
-        { text: 'Yes please! Here are 2 coins!', payAttempt: 2 },
-        { text: 'Is it safe...?', go: 'safe' },
-        { text: '(leave the wizard alone)', end: 'left' },
+        { text: 'Fine, make me smarter. (2 coins)', payAttempt: { cost: 2, ok: 'brainPaid', action: 'buyBrain' } },
+        { text: 'No thank you.', go: 'greet' },
       ],
     },
-    safe: {
-      npc: "Safe?! I've zapped DOZENS of feet! Almost all of them still walk forward! (The backwards fellow was wearing his shoes wrong. Not my fault.)",
+    brainPaid: {
+      npc: "GLUG glug glug. There! ...What, you don't feel anything? Are you SURE? Hmm. Well -- perhaps you are now clever enough to know not to buy things you don't need! See? WORKING already! No refunds on wisdom!",
       choices: [
-        { text: "Good enough! Here are 2 coins!", payAttempt: 2 },
-        { text: 'Tell me about the zap again?', go: 'shop' },
-        { text: '(leave the wizard alone)', end: 'left' },
+        { text: '...back to the stock, please.', go: 'greet' },
+        { text: '(leave, feeling no smarter)', end: 'left' },
+      ],
+    },
+    // ---- Slow-Mo Sap (real: HALF speed -- a trap) ----
+    halfInfo: {
+      npc: "The SLOW-MO SAP! Half the speed, for half the price -- just ONE coin! A bargain, by simple arithmetic! You will move at half your normal pace, GUARANTEED. This one truly WORKS, I promise you.",
+      choices: [
+        { text: "It's so cheap... okay! (1 coin)", payAttempt: { cost: 1, ok: 'halfPaid', action: 'buyHalf' } },
+        { text: 'Why would I want to be SLOWER?', go: 'halfWhy' },
+      ],
+    },
+    halfWhy: {
+      npc: "Why?! To... savour the journey! Smell the flowers! ...Look, it is one coin and it definitely does SOMETHING, which is more than I can say for the syr-- er. Forget that last part. One coin?",
+      choices: [
+        { text: 'Ha! Fine, one coin.', payAttempt: { cost: 1, ok: 'halfPaid', action: 'buyHalf' } },
+        { text: 'Absolutely not.', go: 'greet' },
+      ],
+    },
+    halfPaid: {
+      npc: "SPLORT! Done! Notice how everything is now so much more... leisurely? THAT is the Sap! A deal's a deal, no refunds! (Should you wish to go fast again, might I recommend the Zoom-Zoom Zap? A steal at two coins!)",
+      choices: [
+        { text: 'You absolute SNAKE.', go: 'greet' },
+        { text: '(trudge off slowly)', end: 'left' },
+      ],
+    },
+    // ---- Un-Magic Wand (fake: looks real, inventory item) ----
+    wandInfo: {
+      npc: "Ahh, the UN-MAGIC WAND! Looks EXACTLY like a real wand. Feels like one! Waves like one! Does it do actual magic? ...Not a jot. But nobody ELSE knows that, do they? Point it at a rival with CONFIDENCE! One coin!",
+      choices: [
+        { text: 'A confidence wand! (1 coin)', payAttempt: { cost: 1, ok: 'wandPaid', action: 'buyWand' } },
+        { text: 'So it does... nothing?', go: 'wandNothing' },
+      ],
+    },
+    wandNothing: {
+      npc: "NOTHING! Gloriously nothing! That is the BEAUTY of it. Ninety percent of magic is people merely THINKING you can do magic. This wand provides the LOOK. One coin, and you are officially Wand-Having!",
+      choices: [
+        { text: 'Sold! (1 coin)', payAttempt: { cost: 1, ok: 'wandPaid', action: 'buyWand' } },
+        { text: 'Hard pass.', go: 'greet' },
+      ],
+    },
+    wandPaid: {
+      npc: "BEHOLD -- your wand! Wave it about! Menace a guard! (It will not work, but they don't know that.) Anything else for the discerning shopper?",
+      choices: [
+        { text: 'Show me the stock.', go: 'greet' },
+        { text: '(twirl the useless wand and leave)', end: 'left' },
       ],
     },
     notEnough: {
       npc: (ctx) =>
-        `Hmm... ${ctx.gold} coin${ctx.gold === 1 ? '' : 's'}. The zap costs 2. Magic has PRICES, young lady! The rent on this tower is OUTRAGEOUS -- have you seen how tall it is?`,
-      end: 'notEnough',
-      continueLabel: '(come back with more coins)',
-    },
-    paid: {
-      npc: '✨ ZAP! ✨ There! Feel the tingle? Those are SPEEDY FEET! Off you go -- quick like a bunny, swift like a seagull! (Not the one that fought the Baron. A faster one.)',
-      end: 'paid',
-      continueLabel: '(wiggle toes... whoa!)',
+        `Hmm... ${ctx.gold} coin${ctx.gold === 1 ? '' : 's'}. Not quite enough for that one, friend. Magic has PRICES! The rent on this tower is OUTRAGEOUS -- have you SEEN how tall it is?`,
+      choices: [
+        { text: 'Show me what I CAN afford.', go: 'greet' },
+        { text: '(leave the shop)', end: 'left' },
+      ],
     },
   },
 };
 
-// After she's bought the zap, Wizzo is sold out
+// When every item has been bought, Wizzo is cleaned out
 export const WIZARD_SOLD_TREE = {
   start: 'again',
   name: 'Wizzo the Wizard',
   nodes: {
     again: {
-      npc: 'Back again? How are the speedy feet? Wonderful, yes, I can tell -- you got here FAST! Alas, nothing else in stock until the N.I.C.E. agents release my supply cart. NO REFUNDS! Ha!',
+      npc: "You have cleaned me OUT! Zap, syrup, sap, AND the wand -- a discerning shopper indeed. Nothing left until the N.I.C.E. agents release my supply cart. NO REFUNDS, as ever! Ha!",
       end: 'left',
-      continueLabel: '(wave and zoom off)',
+      continueLabel: '(wave and go)',
     },
   },
 };
@@ -1737,12 +1788,21 @@ function showNode(id, ctx = {}) {
           showNode(leaveAttempts >= 2 ? 'byebye' : 'insist');
         } else if (choice.picker) {
           showAmountPicker();
-        } else if (choice.payAttempt) {
-          if (current.callbacks.getGold() >= choice.payAttempt) {
-            current.callbacks.spendGold(choice.payAttempt);
-            showNode('paid');
+        } else if (choice.payAttempt !== undefined) {
+          // payAttempt is either a number (deduct N, go to 'paid'/'notEnough')
+          // or an object { cost, ok, fail?, action? } for multi-item shops.
+          const pay = choice.payAttempt;
+          const cost = typeof pay === 'number' ? pay : pay.cost;
+          const okNode = typeof pay === 'number' ? 'paid' : pay.ok;
+          const failNode = typeof pay === 'number' ? 'notEnough' : pay.fail || 'notEnough';
+          if (current.callbacks.getGold() >= cost) {
+            current.callbacks.spendGold(cost);
+            if (typeof pay === 'object' && pay.action && current.callbacks.action) {
+              current.callbacks.action(pay.action);
+            }
+            showNode(okNode);
           } else {
-            showNode('notEnough');
+            showNode(failNode);
           }
         } else if (choice.requireGold) {
           // Gate a choice on having enough gold (without spending it)
