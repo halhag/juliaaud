@@ -35,6 +35,7 @@ import {
   FARMER_TREES,
   PRINCE_TREES,
   LOOSE_HORSE_TREE,
+  PRIYA_TREES,
 } from './dialogue.js';
 
 const canvas = document.getElementById('game-canvas');
@@ -150,6 +151,15 @@ const prince = createPrince(scene, world.npcSpots.prince);
 prince.root.rotation.y = 2.4;
 let looseHorse = null; // Gerald, once the runner abandons him, for the player to return
 
+// Priya: a kind villager who's been through N.I.C.E. herself (dark skin, sari colours)
+const priya = createVillager(scene, 'Priya', world.npcSpots.priya, 0.3, {
+  shirtColor: 0xe0559a, // magenta/pink sari
+  pantsColor: 0xf0a020, // gold
+  hairColor: 0x201510,
+  skinColor: 0x9c6b45,
+  bow: false,
+});
+
 // Dash Thunderlegs' race: roaming -> racing -> settle -> (chasing) -> done
 const runnerQuest = {
   state: 'roaming', // 'roaming' | 'racing' | 'settle' | 'chasing' | 'done'
@@ -174,6 +184,7 @@ const quests = {
   hasChickens: false, // bought from the farmer, not yet given to the dragon
   gaveChickensToDragon: false,
   prince: 'mounted', // 'mounted' | 'horseless' | 'reunited'
+  priyaGaveCoin: false,
 };
 const ENGAGE_DISTANCE = 3.2; // how close before an NPC starts talking
 const GUARD_ENGAGE_DISTANCE = 5; // the guard challenges from a bit further out
@@ -720,6 +731,17 @@ function maybeStartConversation() {
 // Encounter table for the quest NPCs. getTree picks dialogue by quest state;
 // onEnd applies the consequences.
 const questEncounters = [
+  {
+    npc: priya,
+    getTree: () => (quests.priyaGaveCoin ? PRIYA_TREES.done : PRIYA_TREES.give),
+    onEnd: (outcome) => {
+      if (outcome === 'reward') {
+        gameState.gold += 1;
+        quests.priyaGaveCoin = true;
+        world.removeBeacon('priya');
+      }
+    },
+  },
   {
     npc: bramble,
     getTree: () => BRAMBLE_TREES[quests.cat],

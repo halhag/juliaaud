@@ -927,6 +927,52 @@ export const CROC_SLIP_TREE = {
 };
 
 // ---- Old MacFeathers, the far-away chicken farmer ----
+// ---- Priya: a kind villager who's been through N.I.C.E. herself ----
+// A rare genuinely helpful character. Gives Julia Aud a coin, one time.
+export const PRIYA_TREES = {
+  give: {
+    start: 'greet',
+    name: 'Priya',
+    nodes: {
+      greet: {
+        npc: "Oh -- you have the look of someone the N.I.C.E. agents have their eye on. I know that look. They charged ME once, you know. Marched me right up to that dreadful orange castle. My family scraped together the Release Tax just in time.",
+        choices: [
+          { text: 'They let you go?', go: 'released' },
+          { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'priya' },
+          { text: "I'm trying to pay Sofia's tax now.", go: 'help' },
+        ],
+      },
+      released: {
+        npc: "Released, once the tax was paid. That is their whole cruel game -- they don't want you GONE, they want you PAYING. Orange fellow's very fond of gold. Anyway -- who is it they've taken from you?",
+        choices: [
+          { text: "My best friend, Sofia.", go: 'help' },
+          { text: 'Have you seen her?', go: 'sofiaAsk', once: 'priya' },
+        ],
+      },
+      sofiaAsk: {
+        npc: "I haven't, dear -- but if she's been taken, she'll be in that castle courtyard with the King's other 'guests'. The tax is 20 gold. A dreadful sum. Here -- let me help a little.",
+        choices: [{ text: 'You would help me?', go: 'help' }],
+      },
+      help: {
+        npc: "Someone helped ME when I had nothing. It's only right I pass it on. It isn't much -- a single coin -- but every coin is a step closer to your friend. Take it, and go quickly. And don't let that eye-patch fellow near your purse!",
+        end: 'reward',
+        continueLabel: '(accept the kind gift -- 1 coin)',
+      },
+    },
+  },
+  done: {
+    start: 'greet',
+    name: 'Priya',
+    nodes: {
+      greet: {
+        npc: "Go on, dear -- your friend is waiting, and the clock is not kind. You can do this. I know you can. (She gives you an encouraging nod.)",
+        end: 'left',
+        continueLabel: '(thank her again)',
+      },
+    },
+  },
+};
+
 export const FARMER_TREES = {
   sell: {
     start: 'greet',

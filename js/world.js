@@ -235,6 +235,7 @@ export function createWorld(scene) {
         [55, -60, 6], // the crocodile hustler
         [-140, 110, 6], // the far-away chicken farmer
         [75, -35, 6], // Prince Percival on horseback
+        [-18, 22, 5], // Priya the kind villager
       ].some(([qx, qz, r = 4]) => Math.hypot(x - qx, z - qz) < r)
     )
       continue;
@@ -1013,6 +1014,7 @@ export function createWorld(scene) {
   addBeacon('crocman', 55, -60, 0x3fae6b); // the crocodile hustler
   addBeacon('farmer', -140, 110, 0xffcf6e); // the far-away chicken farmer
   addBeacon('prince', 75, -35, 0xc9a0ff); // Prince Percival and Gerald
+  addBeacon('priya', -18, 22, 0x7fe6c0); // Priya, the kind villager
 
   // The dragon is a large, permanent, immovable object (his words)
   obstacles.push({ x: -58, z: -32, radius: 3.4 });
@@ -1029,6 +1031,7 @@ export function createWorld(scene) {
     crocman: new THREE.Vector3(55, 0, -60),
     farmer: new THREE.Vector3(-140, 0, 110),
     prince: new THREE.Vector3(75, 0, -35),
+    priya: new THREE.Vector3(-18, 0, 22),
     raceFinish: new THREE.Vector3(104, 0, -110), // road's end, short of the guard
   };
 

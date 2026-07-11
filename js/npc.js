@@ -1085,6 +1085,7 @@ export function createSofia(scene, position) {
     shirtColor: 0xa78bfa, // purple, to tell her apart from Julia Aud
     pantsColor: 0xffe15c,
     hairColor: 0x5a3a1a, // brown hair
+    skinColor: 0x9c6b45, // Sofia is from India -- darker skin
   });
   character.root.name = 'Sofia';
   character.root.position.copy(position);
