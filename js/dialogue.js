@@ -427,7 +427,7 @@ export const CAT_TREES = {
     name: 'A Very Orange Cat',
     nodes: {
       greet: {
-        npc: 'Mrow? (A very round, very orange cat regards you with professional indifference.)',
+        npc: 'Mrow?',
         choices: [
           { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'cat' },
           { text: '(leave the cat to its business)', end: 'left' },
@@ -785,7 +785,7 @@ export const CROCMAN_TREES = {
         continueLabel: "(I'll find more coins)",
       },
       paid: {
-        npc: "PLEASURE doing business! Go on, Chompers -- follow the nice child to the castle! (Chompers slowly turns his head toward you and blinks.) He's ON it. Just lead the way. Freedom awaits! ...Probably! No refunds!",
+        npc: "PLEASURE doing business! Go on, Chompers -- follow the nice child to the castle! He's ON it. Just lead the way. Freedom awaits! ...Probably! No refunds!",
         end: 'hired',
         continueLabel: '(lead Chompers to the castle!)',
       },
@@ -881,7 +881,7 @@ export const PRINCE_TREES = {
     name: 'Prince Percival',
     nodes: {
       greet: {
-        npc: "GERALD?! GERALD!!! (The prince flings himself onto the horse with undignified speed.) You FOUND him! You wonderful, splendid child! Here -- 5 gold coins, exactly as promised! Gerald, my darling, we are WHOLE again!",
+        npc: "GERALD?! GERALD!!! You FOUND him! You wonderful, splendid child! Here -- 5 gold coins, exactly as promised! Gerald, my darling, we are WHOLE again!",
         end: 'delivered',
         continueLabel: '(hand over Gerald, collect 5 coins!)',
       },
@@ -1792,7 +1792,7 @@ export const RUNNER_TREES = {
     name: 'Dash Thunderlegs (and Gerald)',
     nodes: {
       greet: {
-        npc: "FIRST! I'm FIRST! Right here! At the castle! FIRST! (He is still standing on the horse's back, arms raised. The horse looks resigned.) That'll be two coins, pay the legs!",
+        npc: "FIRST! I'm FIRST! Right here! At the castle! FIRST! That'll be two coins, pay the legs!",
         choices: [
           { text: 'You rode a HORSE!', go: 'argue1' },
           { text: '(pay the 2 coins, defeated)', payAttempt: 2 },
