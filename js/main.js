@@ -13,6 +13,7 @@ import {
   createCrocodile,
   createPrince,
   createLooseHorse,
+  createGuru,
 } from './npc.js';
 import {
   startDialogue,
@@ -36,6 +37,7 @@ import {
   PRINCE_TREES,
   LOOSE_HORSE_TREE,
   PRIYA_TREES,
+  GURU_TREE,
 } from './dialogue.js';
 
 const canvas = document.getElementById('game-canvas');
@@ -159,6 +161,9 @@ const priya = createVillager(scene, 'Priya', world.npcSpots.priya, 0.3, {
   skinColor: 0x9c6b45,
   bow: false,
 });
+// Guru Ohm, meditating in the forest clearing
+const guru = createGuru(scene, world.npcSpots.guru);
+let guruMet = false;
 
 // Dash Thunderlegs' race: roaming -> racing -> settle -> (chasing) -> done
 const runnerQuest = {
@@ -437,6 +442,27 @@ function maybeStartConversation() {
           world.removeBeacon('dragon');
         }
         dragon.resumeIdle();
+      },
+    });
+    return;
+  }
+
+  // Guru Ohm, meditating in the forest
+  if (
+    guru.state === 'idle' &&
+    !guru.hasBeenTalkedTo &&
+    distanceTo(guru) <= 3.5
+  ) {
+    keys.forward = keys.backward = keys.turnLeft = keys.turnRight = false;
+    guru.startTalking();
+    startDialogue(GURU_TREE, {
+      ...goldCallbacks,
+      onEnd: () => {
+        if (!guruMet) {
+          guruMet = true;
+          world.removeBeacon('guru');
+        }
+        guru.resumeIdle();
       },
     });
     return;
@@ -877,6 +903,7 @@ window.__debug = {
   crocodile,
   farmer,
   prince,
+  guru,
   getLooseHorse: () => looseHorse,
   quests,
 };
@@ -960,6 +987,7 @@ function animate() {
   crocman.update(delta);
   farmer.update(delta);
   prince.update(delta);
+  guru.update(delta);
   if (looseHorse) {
     looseHorse.update(delta, character.root.position, WALK_SPEED * gameState.speedMultiplier);
   }
@@ -1024,7 +1052,7 @@ function animate() {
 
   // Once she has walked far enough away, NPCs may re-engage (unless huffy,
   // gone for good, or stepped aside)
-  const reengageable = [baron, guard, wizard, dragon, runner, crocman, farmer, prince];
+  const reengageable = [baron, guard, wizard, dragon, runner, crocman, farmer, prince, guru];
   if (looseHorse) reengageable.push(looseHorse);
   for (const npc of [...reengageable, ...questEncounters.map((e) => e.npc)]) {
     if (npc.hasBeenTalkedTo && !inDialogue && distanceTo(npc) > REENGAGE_DISTANCE) {

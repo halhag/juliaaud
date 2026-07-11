@@ -209,6 +209,22 @@ export function createWorld(scene) {
     { x: 16, z: -4, s: 0.95 },
     { x: -8, z: -13, s: 0.9 },
   ];
+
+  // ---- A small dense forest, just for the fun of it ----
+  // (Well clear of the Baron's stash tree at -90,-110.) A meditating guru
+  // sits in the clearing at the centre.
+  const FOREST_CENTER = new THREE.Vector3(40, 0, 120);
+  for (let i = 0; i < 26; i++) {
+    const ang = rand() * Math.PI * 2;
+    // A generous clearing at the centre (so the guru -- and the camera behind
+    // the player -- aren't buried), with a broad ring of trees around it.
+    const dist = 9 + rand() * 12;
+    treeSpots.push({
+      x: FOREST_CENTER.x + Math.cos(ang) * dist,
+      z: FOREST_CENTER.z + Math.sin(ang) * dist,
+      s: 0.9 + rand() * 0.6,
+    });
+  }
   // Scatter more across the countryside, avoiding paths, houses, and the castle
   const pathSample = allPathPoints.filter((_, i) => i % 4 === 0);
   let tries = 0;
@@ -236,6 +252,7 @@ export function createWorld(scene) {
         [-140, 110, 6], // the far-away chicken farmer
         [75, -35, 6], // Prince Percival on horseback
         [-18, 22, 5], // Priya the kind villager
+        [40, 120, 16], // the small forest (its own trees are placed above)
       ].some(([qx, qz, r = 4]) => Math.hypot(x - qx, z - qz) < r)
     )
       continue;
@@ -1015,6 +1032,7 @@ export function createWorld(scene) {
   addBeacon('farmer', -140, 110, 0xffcf6e); // the far-away chicken farmer
   addBeacon('prince', 75, -35, 0xc9a0ff); // Prince Percival and Gerald
   addBeacon('priya', -18, 22, 0x7fe6c0); // Priya, the kind villager
+  addBeacon('guru', 40, 120, 0xffb85c); // Guru Ohm in the forest
 
   // The dragon is a large, permanent, immovable object (his words)
   obstacles.push({ x: -58, z: -32, radius: 3.4 });
@@ -1032,6 +1050,7 @@ export function createWorld(scene) {
     farmer: new THREE.Vector3(-140, 0, 110),
     prince: new THREE.Vector3(75, 0, -35),
     priya: new THREE.Vector3(-18, 0, 22),
+    guru: FOREST_CENTER.clone(),
     raceFinish: new THREE.Vector3(104, 0, -110), // road's end, short of the guard
   };
 

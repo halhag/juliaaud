@@ -1080,6 +1080,138 @@ export function createRunner(scene) {
 }
 
 // Sofia, waiting in the castle courtyard. Idles with a hopeful little bounce.
+// Guru Ohm: a serene, levitating meditator in the forest clearing. Sits
+// cross-legged, gently floats and bobs, and dispenses questionable wisdom.
+export function createGuru(scene, position) {
+  const root = new THREE.Group();
+  root.name = 'GuruOhm';
+  root.position.copy(position);
+
+  const inner = new THREE.Group(); // everything that floats/bobs
+  root.add(inner);
+
+  const robeMat = new THREE.MeshStandardMaterial({ color: 0xd98a3a, roughness: 0.9 });
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xcaa06a, roughness: 0.7 });
+  const hairMat = new THREE.MeshStandardMaterial({ color: 0x2a1a10, roughness: 0.7 });
+  const darkMat = new THREE.MeshStandardMaterial({ color: 0x2b2b2b, roughness: 0.4 });
+
+  // Robe body -- a wide seated cone
+  const robe = new THREE.Mesh(new THREE.ConeGeometry(1.15, 1.3, 16), robeMat);
+  robe.position.y = 0.65;
+  robe.castShadow = true;
+  inner.add(robe);
+  // Crossed-leg suggestion: a low wide band at the base
+  const lap = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 0.35, 16), robeMat);
+  lap.position.y = 0.18;
+  inner.add(lap);
+  // Knees
+  [-0.7, 0.7].forEach((kx) => {
+    const knee = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), robeMat);
+    knee.scale.set(1, 0.7, 1.1);
+    knee.position.set(kx, 0.22, 0.55);
+    inner.add(knee);
+  });
+
+  // Head (chibi)
+  const headGroup = new THREE.Group();
+  headGroup.position.y = 1.7;
+  inner.add(headGroup);
+  const headR = 0.42;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(headR, 18, 18), skinMat);
+  head.castShadow = true;
+  headGroup.add(head);
+  // Topknot bun
+  const bun = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), hairMat);
+  bun.position.y = headR * 0.95;
+  headGroup.add(bun);
+  const hairBand = new THREE.Mesh(
+    new THREE.TorusGeometry(headR * 0.98, 0.04, 8, 24),
+    hairMat
+  );
+  hairBand.rotation.x = Math.PI / 2.4;
+  hairBand.position.y = headR * 0.35;
+  headGroup.add(hairBand);
+  // Serene closed eyes: thin downward arcs
+  [-0.15, 0.15].forEach((ex) => {
+    const eye = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.017, 6, 12, Math.PI), darkMat);
+    eye.position.set(ex, headR * 0.08, headR * 0.9);
+    eye.rotation.z = Math.PI; // arc opening downward = closed, content eyes
+    headGroup.add(eye);
+  });
+  // Bindi dot
+  const bindi = new THREE.Mesh(
+    new THREE.SphereGeometry(0.03, 8, 8),
+    new THREE.MeshStandardMaterial({ color: 0xd23a5a, roughness: 0.5 })
+  );
+  bindi.position.set(0, headR * 0.4, headR * 0.92);
+  headGroup.add(bindi);
+  // A gentle smile
+  const smile = new THREE.Mesh(
+    new THREE.TorusGeometry(0.1, 0.02, 8, 16, Math.PI * 0.6),
+    new THREE.MeshStandardMaterial({ color: 0xb0563a, roughness: 0.8 })
+  );
+  smile.position.set(0, -0.12, headR * 0.92);
+  smile.rotation.z = Math.PI + (Math.PI - Math.PI * 0.6) / 2;
+  headGroup.add(smile);
+
+  // Hands resting on knees in a meditation mudra
+  [-0.7, 0.7].forEach((hx) => {
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 10), skinMat);
+    hand.position.set(hx, 0.42, 0.6);
+    inner.add(hand);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.02, 6, 12), skinMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.set(hx, 0.5, 0.6);
+    inner.add(ring);
+  });
+
+  // A faint halo of serenity
+  const halo = new THREE.Mesh(
+    new THREE.TorusGeometry(0.55, 0.03, 8, 28),
+    new THREE.MeshBasicMaterial({
+      color: 0xffe08a,
+      transparent: true,
+      opacity: 0.5,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
+  halo.rotation.x = Math.PI / 2.2;
+  halo.position.y = 1.7;
+  inner.add(halo);
+
+  scene.add(root);
+
+  let state = 'idle'; // 'idle' | 'talking'
+  let hasBeenTalkedTo = false;
+  let t = 0;
+
+  return {
+    root,
+    get state() {
+      return state;
+    },
+    get hasBeenTalkedTo() {
+      return hasBeenTalkedTo;
+    },
+    set hasBeenTalkedTo(v) {
+      hasBeenTalkedTo = v;
+    },
+    startTalking() {
+      state = 'talking';
+      hasBeenTalkedTo = true;
+    },
+    resumeIdle() {
+      if (state === 'talking') state = 'idle';
+    },
+    update(delta) {
+      t += delta;
+      inner.position.y = 0.35 + Math.sin(t * 0.8) * 0.08; // levitate & bob
+      halo.rotation.z += delta * 0.6;
+    },
+  };
+}
+
 export function createSofia(scene, position) {
   const character = createCharacter({
     shirtColor: 0xa78bfa, // purple, to tell her apart from Julia Aud

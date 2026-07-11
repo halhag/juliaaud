@@ -927,6 +927,129 @@ export const CROC_SLIP_TREE = {
 };
 
 // ---- Old MacFeathers, the far-away chicken farmer ----
+// ---- Guru Ohm: a serene forest philosopher and world-class time-waster ----
+export const GURU_TREE = {
+  start: 'greet',
+  name: 'Guru Ohm',
+  nodes: {
+    greet: {
+      npc: "Ahhhhhhh. A seeker approaches. Sit. Breathe. Be. ...You are breathing, yes? Good. So many forget. I am Guru Ohm, and this is my forest. Or is it? Is it MY forest? Is it a forest at all? Is anything, truly, a forest?",
+      choices: [
+        { text: 'Is this... not a forest?', go: 'whatIsForest' },
+        { text: 'Have you seen my friend Sofia?', go: 'sofiaReal', once: 'guru' },
+        { text: "I'm in a bit of a hurry, actually.", go: 'hurry' },
+        { text: '(bow and leave)', end: 'left' },
+      ],
+    },
+    whatIsForest: {
+      npc: "It has the SHAPE of a forest. The FEELING of a forest. But consider, seeker: you are gazing at this forest inside a small glowing rectangle, are you not? A VIRTUAL forest. Perhaps you should visit a REAL forest. With real bark. Real birdsong. Real mud between the toes. Have you been outside today? TRULY outside?",
+      choices: [
+        { text: '...Are you talking to me through the screen?', go: 'fourthWall' },
+        { text: 'But is a real forest any MORE real than this one?', go: 'reality' },
+        { text: '(back away from the wise man)', end: 'left' },
+      ],
+    },
+    fourthWall: {
+      npc: "I speak to whoever is listening. Right now that is you -- and perhaps also someone holding a rectangle, guiding your little feet. Hello, rectangle-holder. Go outside sometime. The real trees miss you. ...Where was I? Ah. Nowhere. There is only HERE.",
+      choices: [
+        { text: 'That was strangely specific.', go: 'reality' },
+        { text: 'Live in the now, you mean?', go: 'theNow' },
+        { text: '(slowly, mindfully leave)', end: 'left' },
+      ],
+    },
+    reality: {
+      npc: "What IS reality, hmm? This forest is woven from light and arithmetic. But the OTHER forest -- the 'real' one -- is woven from atoms, waves, and probability. Who is to say this grove is any less real than the one beyond your window? Both are experiences. Both are fleeting. Both have very nice trees.",
+      choices: [
+        { text: 'So nothing is real?', go: 'nothingReal' },
+        { text: "What about Sofia? SHE'S real.", go: 'sofiaReal' },
+        { text: '(nod and slip away)', end: 'left' },
+      ],
+    },
+    sofiaReal: {
+      npc: "Sofia. You speak her name with such certainty. But have you SEEN Sofia? Truly? Or have you only been TOLD she waits -- in a castle, in peril, just fifteen minutes away? Perhaps Sofia is real. Perhaps Sofia is an idea you are chasing, and the chasing itself is the point. ...She's probably fine, is my broader message.",
+      choices: [
+        { text: 'She is my BEST FRIEND. Of course she is real!', go: 'friendship' },
+        { text: "You're not helping.", go: 'notHelping' },
+        { text: '(leave to find the definitely-real Sofia)', end: 'left' },
+      ],
+    },
+    friendship: {
+      npc: "Ahh, friendship! Now THAT -- that may be the one truly real thing in any forest, virtual or otherwise. The bond. The caring. The running TOWARD someone in need. Beautiful. ...You could sit and contemplate that bond with me a while? An hour, perhaps two? No? The bond calls. Go then. But breathe as you run.",
+      choices: [
+        { text: "I'll breathe AND run. Goodbye!", end: 'left' },
+        { text: 'Tell me more about being present.', go: 'theNow' },
+      ],
+    },
+    theNow: {
+      npc: "Live in the NOW, seeker. Not in the next fifteen minutes. FIFTEEN MINUTES! Who counts out their one precious life in fifteen-minute portions? Only the anxious. Only the HURRIED. Be here. Be happy HERE. The now is all you truly possess.",
+      choices: [
+        { text: 'But I only HAVE fifteen minutes!', go: 'theClock' },
+        { text: "That's... weirdly hard to argue with.", go: 'beHappy' },
+        { text: '(resist the powerful urge to sit down)', end: 'left' },
+      ],
+    },
+    theClock: {
+      npc: "The clock, the clock! You feel it ticking, up there in the corner, yes? (He does not look. He knows.) But what is a clock but a machine for making you unhappy about a future that has not yet happened? Release the clock. Embrace the moment. ...The moment is quite pleasant. There may be squirrels.",
+      choices: [
+        { text: 'There are no squirrels.', go: 'squirrels' },
+        { text: "I really can't release the clock right now.", go: 'theNow' },
+        { text: '(leave before the clock releases YOU)', end: 'left' },
+      ],
+    },
+    squirrels: {
+      npc: "There COULD be squirrels. In the now, all things are possible. Yesterday there was a very confident pigeon. He, too, sought enlightenment. He left when I ran out of seeds. We are all, in the end, seeking seeds of one kind or another.",
+      choices: [
+        { text: 'What seed am I seeking?', go: 'yourSeed' },
+        { text: 'This is a lovely way to waste time.', go: 'beHappy' },
+        { text: '(quietly depart)', end: 'left' },
+      ],
+    },
+    yourSeed: {
+      npc: "You? You seek a friend, a coin, a gate, a way home. Small seeds, all pointing one direction: LOVE. It is always love, in the end. Also, in your specific case, quite literally twenty gold coins. But mostly love. Now -- be happy, and go. Or stay. Time is a construct. (The clock disagrees, but the clock is not enlightened.)",
+      choices: [
+        { text: 'Thank you, Guru Ohm.', end: 'left' },
+        { text: 'One more wise thing before I go?', go: 'beHappy' },
+      ],
+    },
+    nothingReal: {
+      npc: "Ah, no -- I did not say nothing is real. I said perhaps EVERYTHING is real, in its own way. The forest. The friendship. The eye-patch man's lies. All of them, real experiences -- ESPECIALLY the false ones. Do not trust that eye-patch man, by the way. My enlightenment does not extend to your coin purse.",
+      choices: [
+        { text: 'Even YOU know about the eye-patch man?', go: 'baronKnows' },
+        { text: 'Back to reality, please.', go: 'reality' },
+        { text: '(leave, coin purse clutched)', end: 'left' },
+      ],
+    },
+    baronKnows: {
+      npc: "Everyone knows of the eye-patch man. He tried to double MY coins once. I had no coins. I offered him a moment of pure, radiant presence instead. He did not want it. His loss. Literally, one day, his loss.",
+      choices: [
+        { text: 'Ha. Any other wisdom?', go: 'theNow' },
+        { text: '(leave the wise forest)', end: 'left' },
+      ],
+    },
+    notHelping: {
+      npc: "Helping is a construct. Perhaps by NOT helping, I help you most of all. Or perhaps I am simply a man sitting in a forest, saying things in a calm voice. Both can be true at once. That is the beauty of the now -- it asks so very little of me.",
+      choices: [
+        { text: 'Fair enough. Any ACTUAL advice?', go: 'theNow' },
+        { text: '(leave, mildly enlightened)', end: 'left' },
+      ],
+    },
+    beHappy: {
+      npc: "Be happy NOW, seeker. Not when Sofia is safe. Not when the clock finally stops. NOW. Happiness is not waiting at the finish line -- it is the grass beneath your feet, the light in these (virtual) leaves, this very breath. ...That said, do go and rescue your friend. Happiness AND friendship. Why choose? Off you go. Mindfully.",
+      choices: [
+        { text: "I'll be happy AND hurry. Goodbye!", end: 'left' },
+        { text: 'Wait, what was that about a real forest?', go: 'whatIsForest' },
+      ],
+    },
+    hurry: {
+      npc: "A hurry! The great modern affliction. You rush toward a future while the present -- THIS lovely forest present -- slips by, unlived. But I sense you will not listen. The hurried rarely do. Sit, just for a moment? No? ...Then at least breathe on your way out. In. Out. There. Enlightenment. You're welcome.",
+      choices: [
+        { text: "That's IT?", go: 'theNow' },
+        { text: 'Thanks, I guess. Bye!', end: 'left' },
+      ],
+    },
+  },
+};
+
 // ---- Priya: a kind villager who's been through N.I.C.E. herself ----
 // A rare genuinely helpful character. Gives Julia Aud a coin, one time.
 export const PRIYA_TREES = {
