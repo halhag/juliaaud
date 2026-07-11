@@ -755,6 +755,165 @@ function createHorse() {
   return horse;
 }
 
+// Prince Percival, astride his beloved horse Gerald. Loves that horse more
+// than the kingdom he traded for it. If the runner steals Gerald, the prince
+// is left horseless and heartbroken, and will pay 5 coins to get a horse back.
+export function createPrince(scene, position) {
+  const character = createCharacter({
+    shirtColor: 0x8a5cd0, // royal purple
+    pantsColor: 0xf0d060, // gold hose
+    hairColor: 0x6a4a2a,
+    bow: false,
+  });
+  character.root.name = 'PrincePercival';
+  character.root.position.copy(position);
+
+  // A small gold crown
+  const crownMat = new THREE.MeshStandardMaterial({ color: 0xffd23f, roughness: 0.3, metalness: 0.6 });
+  const crown = new THREE.Group();
+  crown.add(new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.16, 12, 1, true), crownMat));
+  for (let i = 0; i < 6; i++) {
+    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.2, 6), crownMat);
+    const a = (i / 6) * Math.PI * 2;
+    spike.position.set(Math.cos(a) * 0.3, 0.15, Math.sin(a) * 0.3);
+    crown.add(spike);
+  }
+  crown.position.y = 1.74;
+  character.root.add(crown);
+  scene.add(character.root);
+
+  let horse = null;
+  function mountUp() {
+    horse = createHorse();
+    horse.position.y = -0.35;
+    horse.rotation.y = -Math.PI / 2;
+    character.root.position.y = 1.25; // seated proudly on Gerald
+    character.root.add(horse);
+  }
+  mountUp();
+
+  let talkState = 'idle'; // 'idle' | 'talking'
+  let phase = 'mounted'; // 'mounted' | 'horseless' | 'reunited'
+  let hasBeenTalkedTo = false;
+  let horseTime = 0;
+  const facing = character.root.rotation.y;
+
+  function faceToward(x, z) {
+    character.root.rotation.y = Math.atan2(x - character.root.position.x, z - character.root.position.z);
+  }
+
+  return {
+    root: character.root,
+    get state() {
+      return talkState;
+    },
+    get phase() {
+      return phase;
+    },
+    get hasBeenTalkedTo() {
+      return hasBeenTalkedTo;
+    },
+    set hasBeenTalkedTo(v) {
+      hasBeenTalkedTo = v;
+    },
+    startTalking(pos) {
+      talkState = 'talking';
+      hasBeenTalkedTo = true;
+      faceToward(pos.x, pos.z);
+    },
+    resumeIdle() {
+      if (talkState === 'talking') {
+        talkState = 'idle';
+        character.root.rotation.y = facing;
+      }
+    },
+    // The runner made off with Gerald: dismount, stand forlornly on the grass
+    loseHorse() {
+      if (phase !== 'mounted') return;
+      phase = 'horseless';
+      if (horse) character.root.remove(horse);
+      horse = null;
+      character.root.position.y = 0;
+    },
+    // Reunited with a horse -- back in the saddle
+    regainHorse() {
+      phase = 'reunited';
+      mountUp();
+    },
+    update(delta) {
+      character.update(delta, false);
+      if (horse) {
+        horseTime += delta;
+        horse.userData.legs.forEach((leg, i) => {
+          leg.rotation.x = Math.sin(horseTime * 1.5 + i) * 0.05; // idle hoof shuffle
+        });
+      }
+    },
+  };
+}
+
+// A loose horse (Gerald, abandoned by the runner). Stands about looking
+// betrayed until Julia Aud leads it away; then it follows her home.
+export function createLooseHorse(scene, position) {
+  const root = new THREE.Group();
+  root.name = 'LooseHorse';
+  const horse = createHorse();
+  horse.position.y = 0.85; // hooves on the ground
+  root.add(horse);
+  root.position.copy(position);
+  scene.add(root);
+
+  let state = 'idle'; // 'idle' | 'following' | 'delivered'
+  let hasBeenTalkedTo = false;
+  let t = 0;
+
+  function faceToward(x, z) {
+    root.rotation.y = Math.atan2(x - root.position.x, z - root.position.z);
+  }
+
+  return {
+    root,
+    get state() {
+      return state;
+    },
+    get hasBeenTalkedTo() {
+      return hasBeenTalkedTo;
+    },
+    set hasBeenTalkedTo(v) {
+      hasBeenTalkedTo = v;
+    },
+    startTalking() {
+      hasBeenTalkedTo = true; // engagement gate; state stays 'idle' until led
+    },
+    resumeIdle() {},
+    follow() {
+      state = 'following';
+    },
+    delivered() {
+      state = 'delivered';
+      scene.remove(root);
+    },
+    update(delta, playerPos, playerSpeed) {
+      t += delta;
+      horse.position.y = 0.85 + Math.sin(t * 2) * 0.02;
+      if (state === 'following') {
+        const dx = playerPos.x - root.position.x;
+        const dz = playerPos.z - root.position.z;
+        const dist = Math.hypot(dx, dz);
+        if (dist > 2.6) {
+          faceToward(playerPos.x, playerPos.z);
+          const step = playerSpeed * 1.05 * delta; // a horse keeps up easily
+          root.position.x += (dx / dist) * step;
+          root.position.z += (dz / dist) * step;
+          horse.userData.legs.forEach((leg, i) => {
+            leg.rotation.x = Math.sin(t * 12 + i * 1.6) * 0.5;
+          });
+        }
+      }
+    },
+  };
+}
+
 // Dash Thunderlegs: always running, at 1.5x Julia Aud's base speed. Will
 // bet anyone 2 coins on a race to the castle. Has a backup plan (Gerald).
 export function createRunner(scene) {

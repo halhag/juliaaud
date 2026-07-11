@@ -11,6 +11,8 @@ import {
   createDragon,
   createRunner,
   createCrocodile,
+  createPrince,
+  createLooseHorse,
 } from './npc.js';
 import {
   startDialogue,
@@ -31,6 +33,8 @@ import {
   CROCMAN_TREES,
   CROC_SLIP_TREE,
   FARMER_TREES,
+  PRINCE_TREES,
+  LOOSE_HORSE_TREE,
 } from './dialogue.js';
 
 const canvas = document.getElementById('game-canvas');
@@ -141,6 +145,10 @@ const farmer = createVillager(scene, 'OldMacFeathers', world.npcSpots.farmer, 1.
   bow: false,
   beard: true,
 });
+// Prince Percival on his horse Gerald (facing the road)
+const prince = createPrince(scene, world.npcSpots.prince);
+prince.root.rotation.y = 2.4;
+let looseHorse = null; // Gerald, once the runner abandons him, for the player to return
 
 // Dash Thunderlegs' race: roaming -> racing -> settle -> (chasing) -> done
 const runnerQuest = {
@@ -165,6 +173,7 @@ const quests = {
   crocSlipShown: false,
   hasChickens: false, // bought from the farmer, not yet given to the dragon
   gaveChickensToDragon: false,
+  prince: 'mounted', // 'mounted' | 'horseless' | 'reunited'
 };
 const ENGAGE_DISTANCE = 3.2; // how close before an NPC starts talking
 const GUARD_ENGAGE_DISTANCE = 5; // the guard challenges from a bit further out
@@ -343,6 +352,15 @@ function finishRunnerQuest() {
   runner.resumeIdle(); // jogs back to his loop, satisfied
 }
 
+// Once the cheat-race is over, Dash leaves the stolen horse behind: it
+// becomes a loose Gerald near the finish for the player to lead home.
+function abandonStolenHorse() {
+  if (!runnerQuest.cheated || quests.prince !== 'horseless' || looseHorse) return;
+  const p = world.npcSpots.raceFinish;
+  looseHorse = createLooseHorse(scene, new THREE.Vector3(p.x - 2, 0, p.z + 3));
+  world.addBeacon('loosehorse', p.x - 2, p.z + 3, 0xd9924a);
+}
+
 function handleRunnerSettleOutcome(outcome) {
   if (outcome === 'collect') {
     gameState.gold += 2; // she won the bet
@@ -355,6 +373,7 @@ function handleRunnerSettleOutcome(outcome) {
     runnerQuest.chaseGrace = 4; // head start, so she can actually flee
     runner.startChase();
   }
+  abandonStolenHorse();
 }
 
 function maybeStartConversation() {
@@ -490,6 +509,62 @@ function maybeStartConversation() {
           world.removeBeacon('farmer');
         }
         farmer.resumeIdle();
+      },
+    });
+    return;
+  }
+
+  // The loose horse (Gerald, abandoned by the runner)
+  if (
+    looseHorse &&
+    looseHorse.state === 'idle' &&
+    !looseHorse.hasBeenTalkedTo &&
+    distanceTo(looseHorse) <= ENGAGE_DISTANCE
+  ) {
+    keys.forward = keys.backward = keys.turnLeft = keys.turnRight = false;
+    looseHorse.startTalking();
+    startDialogue(LOOSE_HORSE_TREE, {
+      ...goldCallbacks,
+      onEnd: (outcome) => {
+        if (outcome === 'lead') {
+          looseHorse.follow();
+          world.removeBeacon('loosehorse');
+        }
+      },
+    });
+    return;
+  }
+
+  // Prince Percival (mounted silliness, or the horse-theft quest)
+  if (
+    prince.state === 'idle' &&
+    !prince.hasBeenTalkedTo &&
+    distanceTo(prince) <= ENGAGE_DISTANCE
+  ) {
+    faceEachOther(prince);
+    let tree;
+    if (quests.prince === 'reunited') {
+      tree = PRINCE_TREES.reunited;
+    } else if (quests.prince === 'horseless') {
+      tree =
+        looseHorse && looseHorse.state === 'following'
+          ? PRINCE_TREES.delivered
+          : PRINCE_TREES.horseless;
+    } else {
+      tree = PRINCE_TREES.mounted;
+    }
+    startDialogue(tree, {
+      ...goldCallbacks,
+      onEnd: (outcome) => {
+        if (outcome === 'delivered') {
+          gameState.gold += 5;
+          quests.prince = 'reunited';
+          prince.regainHorse();
+          if (looseHorse) looseHorse.delivered();
+          looseHorse = null;
+          world.removeBeacon('prince');
+        }
+        prince.resumeIdle();
       },
     });
     return;
@@ -743,6 +818,8 @@ window.__debug = {
   crocman,
   crocodile,
   farmer,
+  prince,
+  getLooseHorse: () => looseHorse,
   quests,
 };
 
@@ -824,6 +901,10 @@ function animate() {
   runner.update(delta, character.root.position);
   crocman.update(delta);
   farmer.update(delta);
+  prince.update(delta);
+  if (looseHorse) {
+    looseHorse.update(delta, character.root.position, WALK_SPEED * gameState.speedMultiplier);
+  }
   for (const enc of questEncounters) enc.npc.update(delta);
 
   // ---- Chompers the crocodile ----
@@ -855,7 +936,8 @@ function animate() {
       finish.z - character.root.position.z
     );
     const runnerDist = runner.distanceToTarget();
-    // The dirty secret: if she's zapped AND takes a real lead, out comes Gerald
+    // The dirty secret: if she's zapped AND takes a real lead, out comes
+    // Gerald -- and Gerald belongs to Prince Percival, who now goes horseless.
     if (
       !runnerQuest.cheated &&
       gameState.speedMultiplier === 2 &&
@@ -863,6 +945,8 @@ function animate() {
     ) {
       runner.cheat();
       runnerQuest.cheated = true;
+      prince.loseHorse();
+      if (quests.prince === 'mounted') quests.prince = 'horseless';
     }
     if (playerDist < 4 && runner.state !== 'waiting') {
       runnerQuest.playerWon = true;
@@ -882,16 +966,9 @@ function animate() {
 
   // Once she has walked far enough away, NPCs may re-engage (unless huffy,
   // gone for good, or stepped aside)
-  for (const npc of [
-    baron,
-    guard,
-    wizard,
-    dragon,
-    runner,
-    crocman,
-    farmer,
-    ...questEncounters.map((e) => e.npc),
-  ]) {
+  const reengageable = [baron, guard, wizard, dragon, runner, crocman, farmer, prince];
+  if (looseHorse) reengageable.push(looseHorse);
+  for (const npc of [...reengageable, ...questEncounters.map((e) => e.npc)]) {
     if (npc.hasBeenTalkedTo && !inDialogue && distanceTo(npc) > REENGAGE_DISTANCE) {
       npc.hasBeenTalkedTo = false;
     }

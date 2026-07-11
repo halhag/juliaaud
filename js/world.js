@@ -234,6 +234,7 @@ export function createWorld(scene) {
         [-58, -32, 9], // the tired old dragon's strategic recline
         [55, -60, 6], // the crocodile hustler
         [-140, 110, 6], // the far-away chicken farmer
+        [75, -35, 6], // Prince Percival on horseback
       ].some(([qx, qz, r = 4]) => Math.hypot(x - qx, z - qz) < r)
     )
       continue;
@@ -1011,6 +1012,7 @@ export function createWorld(scene) {
   addBeacon('runner', -95, 85, 0xff8c69); // follows him as he runs
   addBeacon('crocman', 55, -60, 0x3fae6b); // the crocodile hustler
   addBeacon('farmer', -140, 110, 0xffcf6e); // the far-away chicken farmer
+  addBeacon('prince', 75, -35, 0xc9a0ff); // Prince Percival and Gerald
 
   // The dragon is a large, permanent, immovable object (his words)
   obstacles.push({ x: -58, z: -32, radius: 3.4 });
@@ -1026,6 +1028,7 @@ export function createWorld(scene) {
     dragon: new THREE.Vector3(-58, 0, -32),
     crocman: new THREE.Vector3(55, 0, -60),
     farmer: new THREE.Vector3(-140, 0, 110),
+    prince: new THREE.Vector3(75, 0, -35),
     raceFinish: new THREE.Vector3(104, 0, -110), // road's end, short of the guard
   };
 
@@ -1089,6 +1092,7 @@ export function createWorld(scene) {
     stashPos: STASH_POS.clone(),
     takeStash,
     npcSpots,
+    addBeacon,
     removeBeacon,
     moveBeacon,
     openGate,

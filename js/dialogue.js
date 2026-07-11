@@ -764,6 +764,104 @@ export const CROCMAN_TREES = {
   },
 };
 
+// ---- Prince Percival and his beloved horse Gerald ----
+export const PRINCE_TREES = {
+  mounted: {
+    start: 'greet',
+    name: 'Prince Percival',
+    nodes: {
+      greet: {
+        npc: "Halt, traveller, and BEHOLD! (A beaming young man waves from atop a brown horse.) I am Prince Percival, and THIS magnificent creature is Gerald -- the finest, noblest, most splendid horse in all the realms!",
+        choices: [
+          { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'prince' },
+          { text: "He's... a very nice horse.", go: 'praise' },
+          { text: '(continue on your way)', end: 'left' },
+        ],
+      },
+      sofiaAsk: {
+        npc: "Sofia? I'm afraid I know only Gerald. Gerald is my whole world. Everything else -- people, places, a kingdom somewhere -- is simply BACKGROUND to Gerald. Have you ever seen a horse this majestic? No. No, you have not.",
+        choices: [
+          { text: 'Tell me about Gerald, then.', go: 'praise' },
+          { text: '(edge away from the horse fan)', end: 'left' },
+        ],
+      },
+      praise: {
+        npc: "Nice?! NICE?! Young one, I gave up an ENTIRE KINGDOM for this horse. A whole kingdom! Turrets, a moat, a modestly-sized army -- ALL of it, traded for Gerald. Best decision I ever made. I'd do it again TWICE.",
+        choices: [
+          { text: 'You traded a KINGDOM for a horse?', go: 'kingdom' },
+          { text: '(back away slowly)', end: 'left' },
+        ],
+      },
+      kingdom: {
+        npc: "The realm of Upper Puddleton! Lovely place. Dreadful drainage. Gerald is worth ten Puddletons -- a HUNDRED! Now if you'll pardon us, Gerald and I have important trotting to attend to. Trot on, Gerald! ...In a moment. He's resting. Magnificently.",
+        end: 'left',
+        continueLabel: '(leave the prince to his trotting)',
+      },
+    },
+  },
+  horseless: {
+    start: 'greet',
+    name: 'Prince Percival',
+    nodes: {
+      greet: {
+        npc: "Oh, WOE! Oh, CATASTROPHE! Someone STOLE Gerald! A dreadful fiend in a RED HEADBAND simply... jogged off with him, mid-race! I am BEREFT! I shall give 5 gold coins -- my very last 5 -- to anyone who brings me a horse! ANY horse! (Preferably Gerald.)",
+        choices: [
+          { text: 'A red headband, you say?', go: 'headband' },
+          { text: "I'll keep an eye out for a horse.", end: 'left' },
+          { text: 'Have you tried... walking?', go: 'walking' },
+        ],
+      },
+      headband: {
+        npc: "You KNOW the fiend?! He claimed he was 'racing' -- and then he was suddenly astride my HORSE! Who DOES that?! Bring Gerald back to me and those 5 coins are YOURS, hero!",
+        choices: [
+          { text: "I'll bring your horse back.", end: 'left' },
+          { text: '(nod solemnly and leave)', end: 'left' },
+        ],
+      },
+      walking: {
+        npc: "WALKING?! I am a PRINCE. Princes do not WALK. We are CONVEYED. Preferably by Gerald, occasionally by a very sturdy servant, NEVER by our own two feet. Five coins for a horse, I BEG you!",
+        end: 'left',
+        continueLabel: '(leave him to his despair)',
+      },
+    },
+  },
+  delivered: {
+    start: 'greet',
+    name: 'Prince Percival',
+    nodes: {
+      greet: {
+        npc: "GERALD?! GERALD!!! (The prince flings himself onto the horse with undignified speed.) You FOUND him! You wonderful, splendid child! Here -- 5 gold coins, exactly as promised! Gerald, my darling, we are WHOLE again!",
+        end: 'delivered',
+        continueLabel: '(hand over Gerald, collect 5 coins!)',
+      },
+    },
+  },
+  reunited: {
+    start: 'greet',
+    name: 'Prince Percival',
+    nodes: {
+      greet: {
+        npc: "Gerald and I are inseparable once more! I've had him fitted with a tracking bell, three sturdy locks, and a small personal moat. Let that headband fiend TRY again. ...Actually, please don't tell him where we are.",
+        end: 'left',
+        continueLabel: '(wave to Gerald)',
+      },
+    },
+  },
+};
+
+// Approaching the abandoned horse: it adopts you
+export const LOOSE_HORSE_TREE = {
+  start: 'greet',
+  name: 'A Loose Horse',
+  nodes: {
+    greet: {
+      npc: 'A brown horse stands here looking mildly betrayed. It has the noble, faintly dim eyes of a creature who was, until recently, a getaway vehicle. As you approach, it perks up and decides -- with enormous commitment -- that it belongs to YOU now.',
+      end: 'lead',
+      continueLabel: '(lead the horse away)',
+    },
+  },
+};
+
 // A tiny narrator beat when Chompers reaches the castle and bails
 export const CROC_SLIP_TREE = {
   start: 'greet',
