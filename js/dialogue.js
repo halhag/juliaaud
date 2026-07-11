@@ -741,7 +741,7 @@ export const CROCMAN_TREES = {
     name: 'Snap Wetsleeves',
     nodes: {
       greet: {
-        npc: "Pssst. Over here. (A damp fellow in a raincoat gestures. A large crocodile lies patiently at his feet.) Name's Snap Wetsleeves. This here is Chompers. We're in the... liberation business. You look like someone with a friend who needs LIBERATING.",
+        npc: "Pssst. Over here. Name's Snap Wetsleeves. This here is Chompers. We're in the... liberation business. You look like someone with a friend who needs LIBERATING.",
         choices: [
           { text: 'Have you seen my friend Sofia?', go: 'reveal' },
           { text: 'What does the crocodile do?', go: 'reveal' },
@@ -822,7 +822,7 @@ export const PRINCE_TREES = {
     name: 'Prince Percival',
     nodes: {
       greet: {
-        npc: "Halt, traveller, and BEHOLD! (A beaming young man waves from atop a brown horse.) I am Prince Percival, and THIS magnificent creature is Gerald -- the finest, noblest, most splendid horse in all the realms!",
+        npc: "Halt, traveller, and BEHOLD! I am Prince Percival, and THIS magnificent creature is Gerald -- the finest, noblest, most splendid horse in all the realms!",
         choices: [
           { text: 'Have you seen my friend Sofia?', go: 'sofiaAsk', once: 'prince' },
           { text: "He's... a very nice horse.", go: 'praise' },
